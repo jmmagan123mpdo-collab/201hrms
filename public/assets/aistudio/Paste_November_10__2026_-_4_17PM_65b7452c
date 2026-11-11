@@ -1,0 +1,1182 @@
+# SJHR201 – COMPLETE HRMIS DEVELOPMENT PROMPT
+## Municipality of San Jose, Occidental Mindoro
+
+Act as a senior full-stack software developer, Firebase architect, UI/UX designer, and software tester.
+
+Your task is to develop a complete, secure, responsive, and fully functional Human Resource Management Information System (HRMIS) named:
+
+**SJHR201 – Human Resource Management System**
+
+This system is intended for the Municipality of San Jose, Occidental Mindoro, Philippines.
+
+Build an actual working application connected to Firebase. Do not create a static prototype or a collection of nonfunctional screens.
+
+Follow the approved requirements below. Do not redesign, remove, or change approved features without permission.
+
+---
+
+# 1. APPROVED TECHNOLOGY STACK
+
+We will use ONLY these four platforms:
+
+### 1. Google AI Studio
+Primary development environment.
+
+Use it to:
+- Generate the application.
+- Develop frontend components.
+- Implement application logic.
+- Connect Firebase.
+- Improve and maintain the system.
+- Fix errors and improve existing features.
+
+### 2. Firebase
+The application's backend and primary database.
+
+Use:
+- Firebase Authentication for user accounts.
+- Cloud Firestore for employee records and application data.
+- Firebase Storage for uploaded personnel documents.
+- Firebase Security Rules for access control.
+- Firebase Cloud Functions only when required for secure backend operations and after confirming availability and cost.
+
+### 3. GitHub
+The application's source code repository.
+
+Requirements:
+- Maintain organized source code.
+- Commit working changes.
+- Avoid overwriting working code unnecessarily.
+- Keep credentials and private keys out of the repository.
+- Use version control before major changes.
+
+### 4. Vercel
+Application hosting and deployment.
+
+Requirements:
+- Connect the GitHub repository.
+- Configure environment variables.
+- Deploy the production application.
+- Enable automatic deployments from approved GitHub changes.
+- Ensure compatibility with the Vercel deployment environment.
+
+## STRICT PLATFORM LIMITATIONS
+
+Do not introduce:
+- Google Sheets as a database.
+- Google Drive as a database.
+- Google Apps Script.
+- Supabase.
+- MySQL or another external database.
+- Another hosting platform.
+- Unapproved third-party services.
+
+Firebase must remain the single authoritative operational database.
+
+Do not enable paid services or incur additional costs without approval.
+
+If an email delivery feature requires an external email provider, explain the requirement and obtain approval before introducing it. Do not pretend that an email notification has been sent if no email delivery service is configured.
+
+---
+
+# 2. SYSTEM DESIGN AND VISUAL THEME
+
+Use the approved SJHR201 Soft Blue dashboard reference image.
+
+Reproduce its visual style as closely as practical.
+
+## Approved HR Management theme
+
+- Sidebar: Soft medium blue.
+- Workspace: Very light blue or white.
+- Header: White.
+- Cards: White with subtle borders and shadows.
+- Primary buttons: Blue.
+- Accent buttons: Orange.
+- Text: Dark gray or black.
+- Sidebar labels: White.
+
+Suggested colors:
+- Primary blue: #173B67
+- Soft blue: #DCEBFA
+- Orange: #F28C28
+- White: #FFFFFF
+- Dark text: #202124
+- Light gray: #E8EAED
+
+## Approved ESS theme
+
+Use orange as the primary identity.
+
+- Primary orange: #F28C28
+- White workspace.
+- Light orange backgrounds.
+- Dark text.
+- Simple navigation.
+
+## UI principles
+
+- Clean government-style interface.
+- Expanded sidebar on desktop.
+- Compact dashboard.
+- Balanced information.
+- Responsive mobile layout.
+- Simple icons.
+- Consistent spacing.
+- Minimal animation.
+- No excessive decorative elements.
+- No redundant buttons.
+- No unnecessary dashboard cards.
+- No confusing navigation.
+
+The design must be comfortable for ordinary HR personnel to use.
+
+Do not substitute the approved Soft Blue design with an unrelated template.
+
+---
+
+# 3. MAIN LANDING PAGE
+
+Create only two main portals:
+
+1. HR MANAGEMENT
+2. EMPLOYEE SELF-SERVICE
+
+Display:
+- Official Municipal Seal.
+- Official HRMO logo when provided.
+- Municipality of San Jose.
+- SJHR201 system name.
+- HR Management access.
+- Employee Self-Service access.
+
+The Developer must not have a separate public landing-page portal.
+
+Developer signs in through HR Management.
+
+Use the actual official logos supplied by the project owner. Do not replace them with invented logos.
+
+---
+
+# 4. USER ACCOUNTS AND ROLES
+
+There are five account types.
+
+## A. Developer
+
+Preserve the existing Developer account and credentials.
+
+Do not reset or delete this account.
+
+Developer permissions:
+- Full system configuration.
+- System Control Center.
+- ESS Configuration.
+- Branding and appearance settings.
+- Workflow configuration.
+- Technical settings.
+- Roles and permissions configuration.
+- Backup and recovery controls.
+- Audit logs.
+- System diagnostics.
+- Maintenance.
+
+Developer technical privileges must not automatically authorize HR transaction approvals or payroll decisions.
+
+## B. HR Administrator
+
+Preserve the existing HR Administrator account and credentials.
+
+Permissions:
+- Full HR management.
+- Employee records.
+- 201 Files.
+- HR Staff accounts.
+- Document requirements.
+- Office management.
+- HR transactions.
+- SALN monitoring.
+- Reports.
+- HR operational settings.
+
+## C. HR Staff
+
+Combine HR Operator, HR Officer, and HR Encoder into ONE role.
+
+The role name must be:
+
+HR STAFF
+
+The HR Administrator assigns individual permissions.
+
+Possible permissions:
+- View employees.
+- Add employees.
+- Edit employee information.
+- Upload documents.
+- Scan documents.
+- Verify documents.
+- Request documents.
+- Process leave applications.
+- Process wellness applications.
+- Generate HR documents.
+- View reports.
+- Other assigned HR functions.
+
+Do not create separate Operator, Officer, and Encoder account types.
+
+## D. Payroll Personnel
+
+Separate account with payroll-specific permissions.
+
+Payroll Personnel must not automatically receive access to all confidential HR documents.
+
+## E. Employee
+
+Employee accounts can only access their own ESS information and documents specifically authorized for employee viewing.
+
+All permissions must be enforced by Firebase Security Rules and trusted backend authorization.
+
+Do not rely only on hiding buttons or navigation items.
+
+---
+
+# 5. LOGIN AND ESS REGISTRATION
+
+## HR Management Login
+
+Fields:
+- Username
+- Password
+- Remember Me
+- Forgot Password
+
+Automatically determine the assigned role after authentication.
+
+Do not provide role selection during login.
+
+## Employee Self-Service Login
+
+Employees can log in using either:
+
+- Registered Email Address
+- Username
+
+Both use the same password.
+
+Include:
+- Remember Me.
+- Forgot Password.
+- Register an ESS Account.
+
+## ESS Registration Workflow
+
+1. Employee submits an email address to HR.
+2. HR records and verifies the email address in the employee's profile.
+3. Employee opens ESS registration.
+4. Employee enters their HR-registered email.
+5. Employee chooses a unique username and password.
+6. The system verifies the email.
+7. The system creates the ESS account.
+8. The ESS account is linked to the employee's permanent internal employee record ID.
+
+Important:
+- Employee Number is NOT a login credential.
+- Employee Number is a personnel information field.
+- Employee Number may change after promotion, transfer, or appointment changes.
+- The permanent internal employee record ID must remain unchanged.
+- Employee number changes must not disconnect the employee's ESS account or 201 files.
+- Only one ESS account should be linked to each employee record.
+- Email changes require HR verification.
+- Password recovery must use the verified email address.
+
+---
+
+# 6. HR MANAGEMENT DASHBOARD
+
+Use the approved Soft Blue design.
+
+## Expanded sidebar
+
+OVERVIEW
+- Dashboard
+
+EMPLOYEE RECORDS
+- Employee Masterlist
+- Employee Profiles
+- 201 Files
+
+DOCUMENT MANAGEMENT
+- Document Requests
+- Document Verification
+- Migration Center
+
+HR TRANSACTIONS
+- Leave Management
+- Wellness Leave / Wellness Break
+- Travel Orders
+- Pass Slips
+- Certificate of Employment
+- Other HR Requests
+
+HR OPERATIONS
+- Overtime
+- Payroll
+- Payslips
+- Training and Development
+- Performance Management
+
+REPORTS
+- Employee Reports
+- 201 Files Compliance
+- SALN Monitoring
+- HR Transaction Reports
+
+ADMINISTRATION
+- User Management
+- Offices
+- Audit Logs
+- Settings
+
+DTR IS EXCLUDED FROM PHASE 1.
+
+Do not implement biometric integration, USB attendance imports, DTR processing, or DTR correction features.
+
+## Dashboard content
+
+Display compact summary cards:
+- Total Employees
+- Active Personnel
+- 201 Files
+- Pending Activities
+
+Display:
+- Pending document submissions.
+- Pending leave applications.
+- SALN monitoring.
+- Outstanding employee document requests.
+- Quick Actions.
+- Employment classification summary.
+
+All figures must come from actual Firestore data.
+
+Never use fabricated production statistics.
+
+The dashboard must adapt to the logged-in user's permissions.
+
+---
+
+# 7. EMPLOYEE MASTERLIST
+
+Support all LGU personnel classifications:
+
+- Permanent
+- Temporary
+- Casual
+- Job Order (JO)
+- Contract of Service (COS)
+- Elective Officials
+
+Masterlist columns:
+- Employee Number
+- Employee Name
+- Office
+- Position
+- Employment Classification
+- Employment Status
+- Record Status
+- Actions
+
+Functions:
+- Add Employee.
+- View Profile.
+- Edit Profile.
+- Open 201 Files.
+- Search.
+- Filter.
+- Export.
+- Archive.
+
+Employee Number must be unique among applicable active records.
+
+Preserve previous employee numbers in personnel history.
+
+Use a permanent internal employee ID for all database relationships.
+
+---
+
+# 8. EMPLOYEE PROFILE
+
+Create these sections:
+
+1. Personal Information
+2. Employment Information
+3. Family Information
+4. Educational Background
+5. Eligibility and Licenses
+6. Government Information
+7. 201 Files
+8. Employment History
+
+Allow authorized HR personnel to edit employee information.
+
+Record changes in the audit history.
+
+---
+
+# 9. COMPLETE 201 FILES MANAGEMENT
+
+Create a master document catalog with these categories:
+
+1. Personal Information
+2. Appointment and Employment
+3. Educational Records
+4. Eligibility and Professional Licenses
+5. Medical and Pre-Employment Requirements
+6. Government IDs and Contributions
+7. SALN and Accountability Documents
+8. Training and Development
+9. Performance Management
+10. Leave and Wellness Records
+11. Compensation and Benefits
+12. Administrative and Legal Records
+13. Personnel Clearances
+14. Separation, Retirement and Transfer
+15. Other Personnel Documents
+
+Include appropriate individual document types such as:
+
+- PDS / CS Form 212.
+- Work Experience Sheet.
+- Birth Certificate.
+- Marriage Certificate.
+- Dependent Birth Certificates.
+- Government IDs.
+- Appointment Papers.
+- Assumption to Duty.
+- Oath of Office.
+- Position Description Form.
+- Employment Contracts.
+- JO/COS Contracts.
+- Contract Extensions.
+- Promotion and Transfer Orders.
+- Diplomas.
+- Transcripts of Records.
+- Training Certificates.
+- Civil Service Eligibility.
+- PRC Licenses.
+- Medical Certificates.
+- Required Clearances.
+- TIN Information.
+- GSIS Information.
+- PhilHealth Information.
+- Pag-IBIG Information.
+- Bank Account Details.
+- SALN.
+- IPCR and applicable performance records.
+- Leave Applications.
+- Wellness Forms W-01 and W-02.
+- Salary Adjustment Notices.
+- Step Increment Notices.
+- Administrative Records.
+- Separation and Retirement Documents.
+
+This is a master catalog, not a universal mandatory checklist.
+
+Requirements must depend on employment classification, position, applicable rules, and employee circumstances.
+
+HR Administrator must be able to configure required, optional, and conditional documents.
+
+## 201 Files Interface
+
+Use collapsible categories.
+
+Do not display a long list of all document types at once.
+
+Each individual document must have its own:
+- Scan.
+- Upload.
+- Preview.
+- Download.
+- Replace.
+
+Record:
+- Document name.
+- Category.
+- Upload date.
+- Uploader.
+- Verification status.
+- Remarks.
+- Version history.
+
+## Document status colors
+
+RED — Missing (Required)
+
+YELLOW — Missing (Optional)
+
+GREEN — Verified
+
+BLUE — For Review
+
+ORANGE — Returned
+
+Category status:
+- Required documents missing: red with missing count.
+- Required complete but optional documents missing: Missing (Optional).
+- All applicable required documents verified: Complete.
+- Optional missing documents must never make an employee non-compliant.
+
+---
+
+# 10. TWO-WAY DOCUMENT UPLOAD
+
+Both HR and employees must be able to upload documents with different permissions.
+
+## HR Upload
+
+Authorized HR users can:
+- Upload.
+- Scan.
+- Organize.
+- Replace.
+- Verify.
+- Request documents.
+- Access authorized confidential records.
+
+## Employee Upload
+
+Employees can:
+- Upload permitted documents.
+- Scan documents using their phones.
+- Submit updated documents.
+- Respond to HR requests.
+- Track submissions.
+- View or download only authorized documents.
+
+Employee uploads must be linked to the correct employee ID and document type.
+
+Employee submissions must remain pending until HR verifies them.
+
+Do not automatically replace previously verified documents.
+
+---
+
+# 11. MOBILE DOCUMENT SCANNING
+
+Every individual document must have its own Scan and Upload buttons.
+
+Mobile scanning workflow:
+
+1. Open document.
+2. Activate camera.
+3. Capture one or multiple pages.
+4. Crop.
+5. Rotate.
+6. Reorder.
+7. Retake or remove pages.
+8. Combine pages into PDF.
+9. Preview.
+10. Confirm and save.
+
+Supported formats:
+- PDF
+- JPG
+- JPEG
+- PNG
+- DOCX
+- XLSX
+
+Use appropriate file validation and file size limits.
+
+The scanner must actually work on supported mobile devices. Do not substitute a normal file upload input and call it scanning.
+
+---
+
+# 12. HR DOCUMENT REQUESTS
+
+HR can request a specific document from an employee.
+
+Request fields:
+- Employee.
+- Document category.
+- Exact document required.
+- Instructions.
+- Due date.
+- Required or optional status.
+
+After HR sends the request:
+
+1. Employee receives an ESS notification.
+2. Employee taps the notification.
+3. System opens the exact requested document upload page.
+4. Employee uploads or scans the requested document.
+5. Submission is recorded.
+6. HR receives a notification.
+7. HR verifies or returns the document.
+8. Employee receives the result.
+
+Statuses:
+- Requested.
+- Submitted.
+- Under Review.
+- Verified.
+- Returned.
+- Overdue.
+
+Preserve request and submission history.
+
+Do not force employees to search through the full 201 Files library to respond.
+
+---
+
+# 13. DOCUMENT PRIVACY
+
+Every document type must have configurable visibility.
+
+A. Employee Accessible
+
+B. HR Restricted
+
+C. Highly Confidential
+
+HR Administrator can configure:
+- Employee can view.
+- Employee can download.
+- Employee can upload.
+- HR verification required.
+- Authorized HR roles.
+- Confidentiality classification.
+
+Employees must not automatically see every document in their 201 files.
+
+SALN access must follow applicable laws and regulations. Do not automatically make all SALNs permanently confidential or publicly accessible.
+
+Enforce permissions using Firebase Security Rules and trusted backend operations.
+
+---
+
+# 14. EXCEL IMPORT AND OCR MIGRATION CENTER
+
+Create two tools.
+
+## A. Employee Database Import
+
+Accept:
+- XLSX
+- XLS
+- CSV
+
+Functions:
+- Upload spreadsheet.
+- Detect worksheets.
+- Detect column headings.
+- Suggest field mappings.
+- Preview records.
+- Validate required information.
+- Detect duplicates.
+- Show errors.
+- Allow correction.
+- Require HR confirmation.
+- Save approved records to Firestore.
+- Generate import report.
+- Preserve import history.
+
+Never overwrite existing employee records automatically.
+
+## B. 201 Files OCR Import
+
+Accept:
+- PDF
+- JPG
+- JPEG
+- PNG
+- DOCX
+- XLSX
+
+OCR supported PDFs and images.
+
+Functions:
+- Upload documents.
+- Extract available information.
+- Suggest employee name and document type.
+- Preview extracted information.
+- Flag uncertain fields.
+- Allow HR to assign employee and category.
+- Require HR confirmation.
+- Save approved documents to Firebase Storage and metadata to Firestore.
+
+Never invent missing information.
+
+Never automatically overwrite verified records.
+
+Preserve original files until migration is verified.
+
+---
+
+# 15. SALN MANAGEMENT
+
+Create a dedicated SALN Management module.
+
+Functions:
+- Annual SALN monitoring.
+- Entry SALN tracking.
+- Exit SALN tracking.
+- Employee submission.
+- HR verification.
+- Returned submissions.
+- Submission history.
+- Office-level monitoring.
+- Reports.
+
+Use the latest applicable CSC forms and filing rules.
+
+Configure applicability according to current legal coverage and personnel classification.
+
+Do not assume all JO/COS personnel are required to submit SALN.
+
+---
+
+# 16. HR TRANSACTION MODULES
+
+Implement:
+
+- Leave Management.
+- Wellness Leave / Wellness Break.
+- Travel Orders.
+- Pass Slips.
+- Certificate of Employment.
+- Employee Profile Updates.
+- Overtime.
+- Payroll.
+- Payslips.
+- Training and Development.
+- Performance Management.
+
+Do not add unnecessary functions.
+
+## Wellness Forms
+
+Support the actual uploaded official forms:
+
+W-01 — Wellness Leave Application Form.
+
+W-02 — Wellness Break Request Form.
+
+Preserve their original sections, fields, wording, and approval structure.
+
+Workflow:
+
+Employee → Immediate Supervisor → Head of Agency → HR Processing → Employee Notification.
+
+Supervisor assessment and Head of Agency approval must remain separate decisions.
+
+Do not automatically approve applications or deduct leave credits before proper approval and HR processing.
+
+---
+
+# 17. APPROVAL WORKFLOW
+
+Do not create separate full dashboards for Department Heads or the Mayor's Office.
+
+Department Heads / Immediate Supervisors and the Head of Agency receive email notifications containing secure approval links.
+
+The approval page must:
+- Verify approver identity.
+- Display the complete request.
+- Display requested dates and days.
+- Display supervisor assessment.
+- Display relevant remarks and attachments.
+- Allow authorized decisions.
+- Record approver, timestamp, remarks, and decision.
+- Preserve approval history.
+
+Do not place unrestricted approve/reject actions directly inside emails.
+
+Do not automatically approve requests.
+
+Head of Agency and authorized signatories must be configurable.
+
+If email delivery requires an additional provider, do not introduce it without approval. In-app notifications must still work independently.
+
+---
+
+# 18. OFFICE DIRECTORY
+
+Preload the LGU San Jose office directory as an editable initial list:
+
+1. Mayor's Office
+2. Municipal Assessor's Office
+3. Municipal Civil Registrar
+4. Municipal Accounting Office
+5. Municipal Tourism, Culture and Development Office
+6. Sangguniang Bayan
+7. Municipal Budget Office
+8. Municipal Health Office
+9. Municipal Environment and Natural Resources Office
+10. Municipal Information Office
+11. Municipal Planning and Development Office
+12. General Services Office
+13. Municipal Social Welfare and Development Office
+14. Municipal Disaster Risk Reduction and Management Office
+15. Human Resource Office
+16. Public Employment Service Office
+17. Municipal Treasurer's Office
+18. Municipal Engineering Office
+19. Public Market Office
+20. Municipal Agriculture Office
+21. Municipal Cooperative Development Office
+22. Bids and Awards Committee
+23. Traffic Management Office
+
+Allow authorized administrators to add, edit, deactivate, and organize offices and sections.
+
+Do not assume the list is permanent.
+
+---
+
+# 19. DEVELOPER SYSTEM CONTROL CENTER
+
+Accessible only to Developer accounts.
+
+Sections:
+1. General System Settings.
+2. Appearance and Branding.
+3. ESS Configuration.
+4. Workflow Configuration.
+5. Notifications.
+6. Roles and Permissions.
+7. Firebase and Storage Configuration.
+8. Backup and Recovery.
+9. Audit Logs.
+10. System Maintenance.
+11. Diagnostics.
+12. Version Information.
+
+ESS Configuration must allow changes to:
+- ESS layout.
+- ESS modules.
+- Visible profile fields.
+- Employee document visibility.
+- Employee upload permissions.
+- Request forms.
+- Notifications.
+- Access permissions.
+- Workflows.
+
+Include:
+- Edit.
+- Preview.
+- Save Draft.
+- Publish Changes.
+- Restore Previous Version.
+
+Keep system configuration separate from employee operational data.
+
+---
+
+# 20. NOTIFICATIONS
+
+Implement in-app notifications for:
+
+- HR document requests.
+- Employee submissions.
+- Document verification.
+- Returned documents.
+- Leave updates.
+- Wellness updates.
+- Approval requests.
+- SALN reminders.
+- Account and password events.
+
+Notifications must open the correct page.
+
+Do not expose confidential document content through unrestricted notifications.
+
+Email notifications may be enabled only after a compatible delivery method is properly configured and approved.
+
+Never show a fake email-sent confirmation.
+
+---
+
+# 21. FIREBASE DATABASE STRUCTURE
+
+Use Cloud Firestore for structured records and Firebase Storage for actual uploaded files.
+
+Suggested collections:
+
+- users
+- employees
+- offices
+- positions
+- employmentTypes
+- employeeDocuments
+- documentCategories
+- documentRequirements
+- documentRequests
+- documentSubmissions
+- documentVersions
+- leaveApplications
+- wellnessApplications
+- salnRecords
+- hrTransactions
+- notifications
+- approvalWorkflows
+- auditLogs
+- systemSettings
+- configurationVersions
+- migrationHistory
+
+Use permanent internal employee IDs for references.
+
+Implement:
+- Consistent document IDs.
+- Proper relationships.
+- Pagination.
+- Efficient queries.
+- Validation.
+- Timestamps.
+- Audit history.
+
+Do not duplicate unnecessary employee information.
+
+---
+
+# 22. SECURITY REQUIREMENTS
+
+Implement:
+
+- Firebase Authentication.
+- Firestore Security Rules.
+- Firebase Storage Security Rules.
+- Role-based authorization.
+- Employee record ownership.
+- Secure password recovery.
+- Email verification.
+- Restricted document access.
+- File validation.
+- Session management.
+- Audit logs.
+- Secure backend operations.
+
+Never store readable passwords.
+
+Never expose service account credentials in frontend code.
+
+Do not let employees access another employee's records.
+
+Do not let ordinary HR Staff access Developer settings.
+
+Do not allow Developer technical privileges to automatically approve HR transactions.
+
+Archive separated and inactive employee records rather than automatically deleting them.
+
+Never reset or delete existing accounts or data without explicit approval.
+
+---
+
+# 23. FUNCTIONALITY REQUIREMENTS
+
+Every visible button, menu, form and action must work.
+
+Examples:
+
+- Add Employee creates a real Firestore record.
+- Edit Employee updates the correct record.
+- Upload saves the actual file to Firebase Storage.
+- Scan opens a working scanning interface.
+- Verify updates the actual document status.
+- Request Document creates a real request.
+- Notifications open the correct page.
+- Export generates an actual file.
+- Import validates and saves approved records.
+- Search retrieves actual records.
+- Filters work.
+- Save buttons save data.
+- Cancel buttons cancel actions.
+- Archive actions enforce permissions and confirmation.
+
+Do not create decorative buttons.
+
+Do not use hardcoded production data.
+
+Do not simulate Firebase success.
+
+Do not claim a feature works unless it has been tested.
+
+---
+
+# 24. DEVELOPMENT ORDER
+
+Build the system in manageable phases.
+
+Do not generate the entire application in one unverified implementation.
+
+## PHASE 1 – FOUNDATION
+
+- Project structure.
+- Firebase connection.
+- Authentication.
+- Landing page.
+- HR Login.
+- ESS Login.
+- ESS Registration.
+- Role-based access.
+- HR Dashboard.
+- ESS Dashboard.
+
+## PHASE 2 – EMPLOYEE RECORDS
+
+- Employee Masterlist.
+- Employee Profiles.
+- Office Directory.
+- 201 Files.
+- Document Categories.
+- Document Requirements.
+
+## PHASE 3 – DOCUMENT MANAGEMENT
+
+- Two-way document uploading.
+- Individual document scanning.
+- HR Document Requests.
+- ESS Notifications.
+- HR Verification.
+- Version History.
+- OCR Migration.
+- Excel Import.
+
+## PHASE 4 – HR TRANSACTIONS
+
+- SALN Management.
+- Leave Management.
+- Wellness Forms W-01 and W-02.
+- Approval Workflow.
+- Travel Orders.
+- Pass Slips.
+- COE.
+- Overtime.
+- Other approved HR functions.
+
+## PHASE 5 – ADMINISTRATION AND FINAL TESTING
+
+- Payroll.
+- Reports.
+- Developer Control Center.
+- ESS Configuration.
+- User Management.
+- Audit Logs.
+- Backup and Recovery.
+- Final security and functionality testing.
+
+DTR remains excluded from Phase 1.
+
+---
+
+# 25. TESTING AND QUALITY CONTROL
+
+Test each phase before moving to the next.
+
+Test:
+- Developer login.
+- HR Administrator login.
+- HR Staff login.
+- Payroll login.
+- ESS registration.
+- ESS email login.
+- ESS username login.
+- Password recovery.
+- Remember Me.
+- Employee creation and editing.
+- Employee number changes.
+- Employee 201 files.
+- HR document upload.
+- Employee document upload.
+- Mobile document scanning.
+- HR verification.
+- Document requests.
+- Notifications.
+- Required and optional status.
+- SALN workflow.
+- Excel import.
+- OCR extraction.
+- Approval workflow.
+- Audit history.
+- Permissions.
+- Desktop responsiveness.
+- Mobile responsiveness.
+
+Fix:
+- Build errors.
+- TypeScript errors.
+- Broken routes.
+- Firebase connection problems.
+- Security rule problems.
+- Nonfunctional buttons.
+- Incorrect document associations.
+- Mobile layout problems.
+
+Do not proceed while critical errors remain unresolved.
+
+---
+
+# 26. DEPLOYMENT AND FINAL DELIVERY
+
+The final application must be deployable through:
+
+Google AI Studio → GitHub → Vercel
+
+Firebase provides backend services.
+
+Provide:
+- Complete source code.
+- Organized project structure.
+- Firebase setup instructions.
+- Firestore Security Rules.
+- Storage Security Rules.
+- Backend function instructions, if needed.
+- Environment variable documentation.
+- GitHub connection instructions.
+- Vercel deployment instructions.
+- Testing summary.
+- Known limitations.
+
+Use environment variables for configuration.
+
+Never commit private credentials.
+
+Do not reset existing Developer or HR Administrator accounts.
+
+Do not delete existing Firebase projects or databases.
+
+Do not claim the application is complete if essential functionality remains unimplemented.
+
+Clearly identify any feature that requires further configuration or an approved additional service.
+
+---
+
+# FINAL INSTRUCTION
+
+Build SJHR201 as a real, secure, reliable and maintainable municipal HRMIS.
+
+The four approved platforms are:
+
+1. Google AI Studio – Development.
+2. Firebase – Authentication, database and file storage.
+3. GitHub – Source code management.
+4. Vercel – Hosting and deployment.
+
+Follow all approved UI and functional decisions.
+
+Keep the interface simple.
+
+Avoid unnecessary features.
+
+Do not remove approved features.
+
+Do not change existing credentials.
+
+Do not reset data.
+
+Implement, test and verify every feature before declaring it complete.
+
+Start with PHASE 1. First inspect the project and report the implementation plan, Firebase dependencies and any existing code that must be preserved. Then build Phase 1 without damaging existing working components.

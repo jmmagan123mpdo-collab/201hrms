@@ -1,0 +1,296 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account in the HRMIS system",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "username": { "type": "string", "minLength": 3, "maxLength": 50 },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "enum": ["developer", "hr_admin", "hr_staff", "payroll", "employee"] },
+        "employeeId": { "type": "string" },
+        "permissions": { "type": "array" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "username", "role", "isActive"]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Permanent employee record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeNumber": { "type": "string", "maxLength": 30 },
+        "firstName": { "type": "string", "maxLength": 60 },
+        "middleName": { "type": "string", "maxLength": 60 },
+        "lastName": { "type": "string", "maxLength": 60 },
+        "suffix": { "type": "string", "maxLength": 20 },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string", "maxLength": 20 },
+        "officeId": { "type": "string" },
+        "officeName": { "type": "string", "maxLength": 150 },
+        "position": { "type": "string", "maxLength": 100 },
+        "classification": { "type": "string", "enum": ["Permanent", "Temporary", "Casual", "Job Order", "Contract of Service", "Elective Officials"] },
+        "employmentStatus": { "type": "string", "enum": ["Active", "On Leave", "Suspended", "Separated", "Retired"] },
+        "recordStatus": { "type": "string", "enum": ["Active", "Archived"] },
+        "hireDate": { "type": "string" },
+        "salaryGrade": { "type": "string" },
+        "stepIncrement": { "type": "string" },
+        "monthlySalary": { "type": "number" },
+        "tin": { "type": "string" },
+        "gsis": { "type": "string" },
+        "philhealth": { "type": "string" },
+        "pagibig": { "type": "string" },
+        "civilStatus": { "type": "string" },
+        "citizenship": { "type": "string" },
+        "dateOfBirth": { "type": "string" },
+        "residentialAddress": { "type": "string" },
+        "permanentAddress": { "type": "string" },
+        "emergencyContactName": { "type": "string" },
+        "emergencyContactPhone": { "type": "string" },
+        "essRegistered": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "employeeNumber", "firstName", "lastName", "officeName", "position", "classification", "employmentStatus"]
+    },
+    "Office": {
+      "title": "Office",
+      "description": "LGU San Jose municipal office",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string", "maxLength": 150 },
+        "headName": { "type": "string", "maxLength": 100 },
+        "location": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "sections": { "type": "array" }
+      },
+      "required": ["id", "name", "isActive"]
+    },
+    "EmployeeDocument": {
+      "title": "EmployeeDocument",
+      "description": "201 File personnel document record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "documentName": { "type": "string", "maxLength": 150 },
+        "documentType": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "fileSize": { "type": "number" },
+        "fileType": { "type": "string" },
+        "status": { "type": "string", "enum": ["missing_required", "missing_optional", "for_review", "verified", "returned"] },
+        "privacy": { "type": "string", "enum": ["employee_accessible", "hr_restricted", "highly_confidential"] },
+        "isRequired": { "type": "boolean" },
+        "uploadedBy": { "type": "string" },
+        "uploaderRole": { "type": "string" },
+        "uploadedAt": { "type": "string" },
+        "verifiedBy": { "type": "string" },
+        "verifiedAt": { "type": "string" },
+        "remarks": { "type": "string" },
+        "version": { "type": "number" }
+      },
+      "required": ["id", "employeeId", "documentName", "status", "privacy"]
+    },
+    "DocumentRequest": {
+      "title": "DocumentRequest",
+      "description": "Formal HR document request to an employee",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "categoryName": { "type": "string" },
+        "documentName": { "type": "string" },
+        "instructions": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "isRequired": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["requested", "submitted", "under_review", "verified", "returned", "overdue"] },
+        "requestedBy": { "type": "string" },
+        "requestedAt": { "type": "string" },
+        "submissionFileUrl": { "type": "string" },
+        "submittedAt": { "type": "string" },
+        "remarks": { "type": "string" }
+      },
+      "required": ["id", "employeeId", "documentName", "status", "dueDate"]
+    },
+    "LeaveApplication": {
+      "title": "LeaveApplication",
+      "description": "CSC Form 6 Leave Application",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "officeName": { "type": "string" },
+        "position": { "type": "string" },
+        "leaveType": { "type": "string" },
+        "details": { "type": "string" },
+        "workingDays": { "type": "number" },
+        "inclusiveDates": { "type": "string" },
+        "commutation": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending_supervisor", "pending_mayor", "approved", "disapproved", "cancelled"] },
+        "supervisorRemarks": { "type": "string" },
+        "mayorRemarks": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "employeeId", "leaveType", "workingDays", "status"]
+    },
+    "WellnessApplication": {
+      "title": "WellnessApplication",
+      "description": "Wellness Form W-01 Leave or W-02 Break Application",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "formType": { "type": "string", "enum": ["W-01", "W-02"] },
+        "employeeId": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "officeName": { "type": "string" },
+        "reason": { "type": "string" },
+        "activityDetails": { "type": "string" },
+        "requestedDate": { "type": "string" },
+        "duration": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending_supervisor", "pending_head", "approved", "disapproved"] },
+        "supervisorAssessment": { "type": "string" },
+        "headRemarks": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "formType", "employeeId", "status"]
+    },
+    "SALNRecord": {
+      "title": "SALNRecord",
+      "description": "Statement of Assets, Liabilities, and Net Worth record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "officeName": { "type": "string" },
+        "filingType": { "type": "string", "enum": ["Annual", "Entry", "Exit"] },
+        "asOfDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending_submission", "submitted", "verified", "returned"] },
+        "documentUrl": { "type": "string" },
+        "totalAssets": { "type": "number" },
+        "totalLiabilities": { "type": "number" },
+        "netWorth": { "type": "number" },
+        "verifiedAt": { "type": "string" }
+      },
+      "required": ["id", "employeeId", "filingType", "asOfDate", "status"]
+    },
+    "SystemNotification": {
+      "title": "SystemNotification",
+      "description": "In-app notification for personnel or HR",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "recipientUid": { "type": "string" },
+        "recipientRole": { "type": "string" },
+        "title": { "type": "string", "maxLength": 120 },
+        "message": { "type": "string", "maxLength": 500 },
+        "type": { "type": "string" },
+        "targetPath": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "message", "isRead", "createdAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "System audit trail entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "actorUid": { "type": "string" },
+        "actorName": { "type": "string" },
+        "actorRole": { "type": "string" },
+        "action": { "type": "string" },
+        "targetEntity": { "type": "string" },
+        "targetId": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "actorName", "action", "targetEntity", "timestamp"]
+    },
+    "BiometricRecord": {
+      "title": "BiometricRecord",
+      "description": "Daily employee time-in and time-out attendance records from municipal biometric terminals",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeId": { "type": "string" },
+        "employeeName": { "type": "string", "maxLength": 100 },
+        "employeeNumber": { "type": "string", "maxLength": 30 },
+        "officeName": { "type": "string", "maxLength": 150 },
+        "position": { "type": "string", "maxLength": 100 },
+        "date": { "type": "string" },
+        "amIn": { "type": "string" },
+        "amOut": { "type": "string" },
+        "pmIn": { "type": "string" },
+        "pmOut": { "type": "string" },
+        "tardyMinutes": { "type": "number" },
+        "undertimeMinutes": { "type": "number" },
+        "totalHours": { "type": "number" },
+        "status": { "type": "string", "enum": ["On Time", "Late / Tardy", "Undertime", "Half Day", "Absent", "On Leave", "Official Business (OB)"] },
+        "terminalId": { "type": "string" },
+        "terminalName": { "type": "string" },
+        "verificationMethod": { "type": "string" },
+        "syncStatus": { "type": "string", "enum": ["synced", "pending_sync", "manual"] },
+        "syncedAt": { "type": "string" }
+      },
+      "required": ["id", "employeeId", "employeeName", "date", "status", "syncStatus"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Collection of system user profiles"
+    },
+    "/employees/{employeeId}": {
+      "schema": "Employee",
+      "description": "Collection of municipal employee master records"
+    },
+    "/offices/{officeId}": {
+      "schema": "Office",
+      "description": "Collection of municipal offices"
+    },
+    "/employeeDocuments/{documentId}": {
+      "schema": "EmployeeDocument",
+      "description": "Collection of 201 file documents"
+    },
+    "/documentRequests/{requestId}": {
+      "schema": "DocumentRequest",
+      "description": "Collection of HR document requests"
+    },
+    "/leaveApplications/{applicationId}": {
+      "schema": "LeaveApplication",
+      "description": "Collection of leave applications"
+    },
+    "/wellnessApplications/{applicationId}": {
+      "schema": "WellnessApplication",
+      "description": "Collection of wellness break and leave applications"
+    },
+    "/salnRecords/{salnId}": {
+      "schema": "SALNRecord",
+      "description": "Collection of employee SALN records"
+    },
+    "/biometricRecords/{recordId}": {
+      "schema": "BiometricRecord",
+      "description": "Collection of daily biometric time-in and time-out logs"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "SystemNotification",
+      "description": "In-app notifications for users"
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "System security and operational audit trail"
+    }
+  }
+}

@@ -1,0 +1,160 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Role helpers
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isHRAdmin() {
+      return isSignedIn() && (
+        getUserData().role == 'hr_admin' || 
+        getUserData().role == 'developer' ||
+        request.auth.token.email == 'jmmagan123mpdo@gmail.com'
+      );
+    }
+
+    function isDeveloper() {
+      return isSignedIn() && (
+        getUserData().role == 'developer' ||
+        request.auth.token.email == 'jmmagan123mpdo@gmail.com'
+      );
+    }
+
+    function isHRStaff() {
+      return isSignedIn() && (
+        getUserData().role == 'hr_staff' ||
+        isHRAdmin()
+      );
+    }
+
+    function isPayroll() {
+      return isSignedIn() && (
+        getUserData().role == 'payroll' ||
+        isHRAdmin()
+      );
+    }
+
+    // Fallback deny-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Connection test document
+    match /test/connection {
+      allow read, write: if true;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (isOwner(userId) || isHRAdmin());
+      allow delete: if isDeveloper();
+    }
+
+    // Employees masterlist
+    match /employees/{employeeId} {
+      allow read: if isSignedIn();
+      allow create, update: if isHRStaff();
+      allow delete: if isHRAdmin();
+    }
+
+    // Municipal Offices
+    match /offices/{officeId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isHRAdmin();
+    }
+
+    // 201 Personnel Documents
+    match /employeeDocuments/{documentId} {
+      allow read: if isSignedIn() && (
+        isHRStaff() ||
+        (resource.data.employeeId == getUserData().employeeId && resource.data.privacy == 'employee_accessible')
+      );
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (isHRStaff() || resource.data.employeeId == getUserData().employeeId);
+      allow delete: if isHRAdmin();
+    }
+
+    // Document Requests
+    match /documentRequests/{requestId} {
+      allow read: if isSignedIn() && (
+        isHRStaff() || resource.data.employeeId == getUserData().employeeId
+      );
+      allow create, update: if isSignedIn();
+      allow delete: if isHRAdmin();
+    }
+
+    // Leave Applications
+    match /leaveApplications/{applicationId} {
+      allow read: if isSignedIn() && (
+        isHRStaff() || resource.data.employeeId == getUserData().employeeId
+      );
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isHRAdmin();
+    }
+
+    // Wellness Applications (W-01 and W-02)
+    match /wellnessApplications/{applicationId} {
+      allow read: if isSignedIn() && (
+        isHRStaff() || resource.data.employeeId == getUserData().employeeId
+      );
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isHRAdmin();
+    }
+
+    // SALN Records
+    match /salnRecords/{salnId} {
+      allow read: if isSignedIn() && (
+        isHRStaff() || resource.data.employeeId == getUserData().employeeId
+      );
+      allow create, update: if isSignedIn();
+      allow delete: if isHRAdmin();
+    }
+
+    // Biometric & Daily Attendance Records
+    match /biometricRecords/{recordId} {
+      allow read: if isSignedIn() && (
+        isHRStaff() || resource.data.employeeId == getUserData().employeeId
+      );
+      allow create, update: if isHRStaff();
+      allow delete: if isHRAdmin();
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && (
+        resource.data.recipientUid == request.auth.uid ||
+        (resource.data.recipientRole == 'hr_staff' && isHRStaff()) ||
+        (resource.data.recipientRole == 'admin' && isHRAdmin())
+      );
+      allow create, update: if isSignedIn();
+      allow delete: if isSignedIn() && resource.data.recipientUid == request.auth.uid;
+    }
+
+    // Audit Logs
+    match /auditLogs/{logId} {
+      allow read: if isHRAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if false; // Immutable audit records
+    }
+
+    // System Settings & Configuration
+    match /systemSettings/{settingId} {
+      allow read: if isSignedIn();
+      allow write: if isDeveloper() || isHRAdmin();
+    }
+  }
+}
