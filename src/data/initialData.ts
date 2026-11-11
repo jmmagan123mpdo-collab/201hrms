@@ -20,6 +20,8 @@ export const INITIAL_SETTINGS: SystemSettings = {
   hrmoHead: 'Atty. Maria Elena Castillo, MHRMO Head',
   essSelfRegistrationEnabled: true,
   maintenanceMode: false,
+  sampleSupervisorEmail: 'jmmagan123mpdo@gmail.com',
+  sampleMayorEmail: 'juanmig488@gmail.com',
   brandColors: {
     primaryBlue: '#173B67',
     softBlue: '#DCEBFA',

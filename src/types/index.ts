@@ -394,6 +394,8 @@ export interface SystemSettings {
   hrmoHead: string;
   essSelfRegistrationEnabled: boolean;
   maintenanceMode: boolean;
+  sampleSupervisorEmail?: string;
+  sampleMayorEmail?: string;
   brandColors: {
     primaryBlue: string;
     softBlue: string;
@@ -401,49 +403,3 @@ export interface SystemSettings {
   };
 }
 
-export type AttendanceStatus = 
-  | 'On Time' 
-  | 'Late / Tardy' 
-  | 'Undertime' 
-  | 'Half Day' 
-  | 'Absent' 
-  | 'On Leave' 
-  | 'Official Business (OB)';
-
-export interface BiometricTerminal {
-  id: string;
-  name: string;
-  location: string;
-  ipAddress: string;
-  model: string;
-  status: 'online' | 'offline' | 'syncing';
-  lastPing: string;
-  totalLogsStored: number;
-}
-
-export interface BiometricRecord {
-  id: string; // e.g. BIO-2026-02-10-EMP001
-  employeeId: string;
-  employeeName: string;
-  employeeNumber: string;
-  officeName: string;
-  position: string;
-  classification: EmploymentClassification;
-  date: string; // YYYY-MM-DD
-  amIn: string | null; // e.g. "07:54 AM"
-  amOut: string | null; // e.g. "12:02 PM"
-  pmIn: string | null; // e.g. "12:51 PM"
-  pmOut: string | null; // e.g. "05:05 PM"
-  tardyMinutes: number; // e.g. 0, 15
-  undertimeMinutes: number; // e.g. 0
-  totalHours: number; // e.g. 8.0
-  status: AttendanceStatus;
-  terminalId: string;
-  terminalName: string;
-  verificationMethod: 'Fingerprint' | 'Facial Recognition' | 'RFID Card' | 'Manual Log';
-  syncStatus: 'synced' | 'pending_sync' | 'manual';
-  syncedAt: string;
-  verifiedBy?: string;
-  verifiedAt?: string;
-  remarks?: string;
-}

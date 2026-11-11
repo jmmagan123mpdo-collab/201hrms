@@ -34,6 +34,8 @@ export const DeveloperCenter: React.FC = () => {
   const [hrmoHead, setHrmoHead] = useState(settings.hrmoHead);
   const [essEnabled, setEssEnabled] = useState(settings.essSelfRegistrationEnabled);
   const [maintenanceMode, setMaintenanceMode] = useState(settings.maintenanceMode);
+  const [supervisorEmail, setSupervisorEmail] = useState(settings.sampleSupervisorEmail || 'jmmagan123mpdo@gmail.com');
+  const [mayorEmail, setMayorEmail] = useState(settings.sampleMayorEmail || 'juanmig488@gmail.com');
 
   // ESS Configuration Toggles
   const [essUploadAllowed, setEssUploadAllowed] = useState(true);
@@ -63,9 +65,11 @@ export const DeveloperCenter: React.FC = () => {
       headOfAgency,
       hrmoHead,
       essSelfRegistrationEnabled: essEnabled,
-      maintenanceMode
+      maintenanceMode,
+      sampleSupervisorEmail: supervisorEmail.trim(),
+      sampleMayorEmail: mayorEmail.trim()
     });
-    setSaveMessage('System settings published and synchronized to database successfully.');
+    setSaveMessage('Settings saved in this browser. Email delivery is not yet configured.');
     setTimeout(() => setSaveMessage(''), 4000);
   };
 
@@ -269,6 +273,22 @@ export const DeveloperCenter: React.FC = () => {
             </div>
           )}
 
+          {/* SAMPLE APPROVER ROUTING — configurable, no email delivery yet */}
+          {(activeSubTab === 4 || activeSubTab === 5) && (
+            <div className="space-y-4">
+              <h3 className="font-bold text-sm text-slate-900 border-b pb-2">Sample Leave Approval Email Routing</h3>
+              <p className="text-slate-600">Test recipients for the planned Supervisor → Mayor → HR review process. These are not verified official approver accounts.</p>
+              <label className="block font-semibold text-slate-700">Immediate Supervisor email
+                <input type="email" value={supervisorEmail} onChange={e => setSupervisorEmail(e.target.value)} className="block mt-1 w-full p-2 border rounded-lg" />
+              </label>
+              <label className="block font-semibold text-slate-700">Mayor email
+                <input type="email" value={mayorEmail} onChange={e => setMayorEmail(e.target.value)} className="block mt-1 w-full p-2 border rounded-lg" />
+              </label>
+              <p className="text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">Configuration only: interactive approval emails, secure approval links, HR final acceptance, and automatic leave-credit deductions are not yet implemented. No emails are sent by saving these settings.</p>
+              <button type="button" onClick={handleSaveSettings} className="bg-[#173B67] text-white rounded-lg px-4 py-2">Save sample routing</button>
+            </div>
+          )}
+
           {/* SECTION 7: FIREBASE & STORAGE */}
           {activeSubTab === 7 && (
             <div className="space-y-4">
@@ -310,11 +330,11 @@ export const DeveloperCenter: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
                   <span className="font-bold text-emerald-900 block">Database Latency</span>
-                  <span className="text-xl font-bold text-emerald-700">18 ms</span>
+                  <span className="text-xl font-bold text-emerald-700">Not measured</span>
                 </div>
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl">
                   <span className="font-bold text-blue-900 block">Rule Invariant Tests</span>
-                  <span className="text-xl font-bold text-blue-700">100% Passed</span>
+                  <span className="text-xl font-bold text-blue-700">Not verified</span>
                 </div>
               </div>
             </div>
@@ -327,7 +347,7 @@ export const DeveloperCenter: React.FC = () => {
               <div className="space-y-1.5 text-slate-600">
                 <div><strong>Platform:</strong> SJHR201 – Human Resource Management System</div>
                 <div><strong>LGU:</strong> Municipality of San Jose, Occidental Mindoro, Philippines</div>
-                <div><strong>Version:</strong> Phase 1 Foundation Release (v1.0.0-PROD)</div>
+                <div><strong>Version:</strong> Development build (not production ready)</div>
                 <div><strong>Runtime:</strong> React 19 • TypeScript • Vite • Tailwind CSS v4 • Cloud Firestore</div>
               </div>
             </div>

@@ -138,7 +138,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* HR TRANSACTIONS */}
         <SectionHeader title="HR TRANSACTIONS" />
         <NavItem tab="leave" label="Leave Management" icon={FileClock} badge={pendingLeavesCount} />
-        <NavItem tab="wellness" label="Wellness Leave / Break" icon={HeartHandshake} badge={pendingWellnessCount} />
         <NavItem tab="travel_orders" label="Travel Orders" icon={Navigation} />
         <NavItem tab="pass_slips" label="Pass Slips" icon={ClipboardList} />
         <NavItem tab="coe" label="Certificate of Employment" icon={Award} />

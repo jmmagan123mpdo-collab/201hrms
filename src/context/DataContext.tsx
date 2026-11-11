@@ -13,21 +13,12 @@ import {
   SystemSettings,
   ESSDocumentServiceRequest,
   ESSRequestStatus,
-  BiometricRecord,
-  BiometricTerminal
 } from '../types/index.ts';
 import { 
-  INITIAL_EMPLOYEES, 
   INITIAL_OFFICES, 
   INITIAL_CATEGORIES, 
-  INITIAL_DOCUMENT_REQUESTS, 
-  INITIAL_LEAVE_APPLICATIONS, 
-  INITIAL_WELLNESS_APPLICATIONS, 
-  INITIAL_SALN_RECORDS, 
-  INITIAL_SETTINGS,
-  INITIAL_ESS_SERVICE_REQUESTS
+  INITIAL_SETTINGS
 } from '../data/initialData.ts';
-import { INITIAL_TERMINALS, INITIAL_BIOMETRIC_RECORDS } from '../data/biometricsData.ts';
 import { db, testConnection } from '../lib/firebase.ts';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 
@@ -41,8 +32,6 @@ interface DataContextType {
   leaveApplications: LeaveApplication[];
   wellnessApplications: WellnessApplication[];
   salnRecords: SALNRecord[];
-  biometricRecords: BiometricRecord[];
-  terminals: BiometricTerminal[];
   notifications: SystemNotification[];
   auditLogs: AuditLog[];
   settings: SystemSettings;
@@ -78,10 +67,6 @@ interface DataContextType {
   submitSALN: (employeeId: string, filingType: 'Annual' | 'Entry' | 'Exit', asOfDate: string, docUrl?: string, netWorth?: number) => Promise<void>;
   verifySALN: (id: string, verifiedBy: string) => Promise<void>;
 
-  // Biometrics & Daily Attendance Actions
-  syncBiometrics: (terminalId?: string) => Promise<{ syncedCount: number; newLogsCount: number }>;
-  addOrUpdateBiometricRecord: (record: BiometricRecord) => Promise<void>;
-  verifyBiometricRecord: (recordId: string, verifiedBy: string) => Promise<void>;
   
   addAuditLog: (action: string, targetEntity: string, targetId: string, details: string, actorName?: string, actorRole?: string) => void;
   markNotificationRead: (id: string) => void;
@@ -98,7 +83,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // State with LocalStorage & Firestore sync
   const [employees, setEmployees] = useState<Employee[]>(() => {
     const saved = localStorage.getItem('sjhr201_employees');
-    return saved ? JSON.parse(saved) : INITIAL_EMPLOYEES;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [offices, setOffices] = useState<Office[]>(() => {
@@ -117,160 +102,37 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [requests, setRequests] = useState<DocumentRequest[]>(() => {
     const saved = localStorage.getItem('sjhr201_requests');
-    return saved ? JSON.parse(saved) : INITIAL_DOCUMENT_REQUESTS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [essServiceRequests, setEssServiceRequests] = useState<ESSDocumentServiceRequest[]>(() => {
     const saved = localStorage.getItem('sjhr201_ess_service_requests');
-    return saved ? JSON.parse(saved) : INITIAL_ESS_SERVICE_REQUESTS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [leaveApplications, setLeaveApplications] = useState<LeaveApplication[]>(() => {
     const saved = localStorage.getItem('sjhr201_leave_applications');
-    return saved ? JSON.parse(saved) : INITIAL_LEAVE_APPLICATIONS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [wellnessApplications, setWellnessApplications] = useState<WellnessApplication[]>(() => {
     const saved = localStorage.getItem('sjhr201_wellness_applications');
-    return saved ? JSON.parse(saved) : INITIAL_WELLNESS_APPLICATIONS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [salnRecords, setSalnRecords] = useState<SALNRecord[]>(() => {
     const saved = localStorage.getItem('sjhr201_saln_records');
-    return saved ? JSON.parse(saved) : INITIAL_SALN_RECORDS;
-  });
-
-  const [biometricRecords, setBiometricRecords] = useState<BiometricRecord[]>(() => {
-    const saved = localStorage.getItem('sjhr201_biometric_records');
-    return saved ? JSON.parse(saved) : INITIAL_BIOMETRIC_RECORDS;
-  });
-
-  const [terminals, setTerminals] = useState<BiometricTerminal[]>(() => {
-    const saved = localStorage.getItem('sjhr201_terminals');
-    return saved ? JSON.parse(saved) : INITIAL_TERMINALS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [notifications, setNotifications] = useState<SystemNotification[]>(() => {
-    const defaultNotifs: SystemNotification[] = [
-      {
-        id: 'notif-ps-2026-02',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: 'February 2026 Payslip Available',
-        message: 'Your official monthly electronic payslip for February 2026 is now available. Net Take-Home Pay: ₱32,699.00 disbursed via Landbank ATM Payroll.',
-        type: 'payslip_available',
-        targetTab: 'payslips',
-        actionLabel: 'View Payslip',
-        isRead: false,
-        createdAt: '2026-02-10T16:30:00.000Z'
-      },
-      {
-        id: 'notif-leave-001',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: 'Leave Approved: CSC Form 6 (Vacation)',
-        message: 'Your 3-day Vacation Leave application (Feb 18-20, 2026) has been approved by Municipal Mayor Rey P. Ladaga and recorded by MHRMO.',
-        type: 'leave_update',
-        targetTab: 'leave',
-        actionLabel: 'View Approval',
-        isRead: false,
-        createdAt: '2026-02-09T11:15:00.000Z'
-      },
-      {
-        id: 'notif-doc-saln-01',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: 'New Document Request: Annual SALN',
-        message: 'MHRMO Compliance: The HR Office has requested your Annual SALN Form as of Dec 31, 2025. Due date: April 15, 2026.',
-        type: 'document_request',
-        targetTab: 'requests',
-        actionLabel: 'Upload SALN',
-        isRead: false,
-        createdAt: '2026-02-08T09:05:00.000Z'
-      },
-      {
-        id: 'notif-coe-001',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: 'COE Service Request Ready',
-        message: 'Your Certificate of Employment (COE) with Compensation is officially sealed by MHRMO and ready for download or municipal pickup.',
-        type: 'ess_request_ready',
-        targetTab: 'requests',
-        actionLabel: 'Download COE',
-        isRead: false,
-        createdAt: '2026-02-07T14:20:00.000Z'
-      },
-      {
-        id: 'notif-doc-ver-01',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: '201 Document Verified: Appointment Paper',
-        message: 'Your CSC Attested Permanent Appointment (HRMO II) has been verified and permanently cataloged under Category B in your 201 Digital File.',
-        type: 'verification',
-        targetTab: '201_files',
-        actionLabel: 'View 201 Files',
-        isRead: true,
-        createdAt: '2026-02-03T10:00:00.000Z'
-      },
-      {
-        id: 'notif-ps-2026-01',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: 'January 2026 Payslip Available',
-        message: 'Your January 2026 computerized payroll extract is archived and accessible in your Payslip History.',
-        type: 'payslip_available',
-        targetTab: 'payslips',
-        actionLabel: 'View Payslip',
-        isRead: true,
-        createdAt: '2026-01-31T17:00:00.000Z'
-      },
-      {
-        id: 'notif-hr-01',
-        recipientRole: 'hr_staff',
-        title: 'Document Submitted for Review',
-        message: 'Juan Dela Cruz submitted IPCR Form (2nd Semester 2025) for verification.',
-        type: 'submission',
-        targetPath: 'verification',
-        isRead: false,
-        createdAt: '2026-02-05T14:23:00.000Z'
-      }
-    ];
-
-    const saved = localStorage.getItem('sjhr201_notifications');
-    if (saved) {
-      try {
-        const parsed: SystemNotification[] = JSON.parse(saved);
-        // Ensure new notification types are merged if user had older localStorage
-        const hasPayslipNotif = parsed.some(n => n.type === 'payslip_available');
-        if (!hasPayslipNotif) {
-          const merged = [...defaultNotifs.filter(d => !parsed.some(p => p.id === d.id)), ...parsed];
-          localStorage.setItem('sjhr201_notifications', JSON.stringify(merged));
-          return merged;
-        }
-        return parsed;
-      } catch {
-        return defaultNotifs;
-      }
-    }
-    return defaultNotifs;
+    try { return JSON.parse(localStorage.getItem('sjhr201_notifications') || '[]'); }
+    catch { return []; }
   });
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
-    const saved = localStorage.getItem('sjhr201_audit_logs');
-    if (saved) return JSON.parse(saved);
-    return [
-      {
-        id: 'log-1',
-        actorUid: 'usr-developer',
-        actorName: 'Lead System Developer',
-        actorRole: 'Developer',
-        action: 'System Initialization',
-        targetEntity: 'System',
-        targetId: 'SJHR201',
-        details: 'Initial system boot and municipal database schema loaded for San Jose, Occidental Mindoro.',
-        timestamp: '2026-02-10T08:00:00.000Z'
-      }
-    ];
+    try { return JSON.parse(localStorage.getItem('sjhr201_audit_logs') || '[]'); }
+    catch { return []; }
   });
 
   const [settings, setSettings] = useState<SystemSettings>(() => {
@@ -317,14 +179,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     localStorage.setItem('sjhr201_saln_records', JSON.stringify(salnRecords));
   }, [salnRecords]);
-
-  useEffect(() => {
-    localStorage.setItem('sjhr201_biometric_records', JSON.stringify(biometricRecords));
-  }, [biometricRecords]);
-
-  useEffect(() => {
-    localStorage.setItem('sjhr201_terminals', JSON.stringify(terminals));
-  }, [terminals]);
 
   useEffect(() => {
     localStorage.setItem('sjhr201_notifications', JSON.stringify(notifications));
@@ -769,74 +623,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     addAuditLog('Verify SALN', 'SALN', id, `SALN verified by ${verifiedBy}`);
   };
 
-  // Biometrics & Attendance Actions
-  const syncBiometrics = async (terminalId?: string): Promise<{ syncedCount: number; newLogsCount: number }> => {
-    // Simulate real device sync latency
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    setTerminals(prev => prev.map(t => {
-      if (!terminalId || t.id === terminalId) {
-        return {
-          ...t,
-          status: 'online',
-          lastPing: 'Just now',
-          totalLogsStored: t.totalLogsStored + Math.floor(Math.random() * 5) + 1
-        };
-      }
-      return t;
-    }));
-
-    setBiometricRecords(prev => prev.map(r => ({
-      ...r,
-      syncStatus: 'synced',
-      syncedAt: now.toISOString()
-    })));
-
-    const affectedDevice = terminalId ? `Terminal ${terminalId}` : 'All 4 Municipal Biometric Terminals';
-    addAuditLog('Sync Biometrics', 'Biometrics', terminalId || 'ALL_TERMINALS', `Synchronized attendance logs from ${affectedDevice} at ${timeStr}`);
-    
-    addNotification({
-      recipientRole: 'hr_staff',
-      title: 'Biometrics Device Sync Completed',
-      message: `Successfully synchronized daily time records from ${affectedDevice}. Attendance data is updated.`,
-      type: 'system',
-      targetPath: 'biometrics',
-      isRead: false
-    });
-
-    return { syncedCount: biometricRecords.length, newLogsCount: 4 };
-  };
-
-  const addOrUpdateBiometricRecord = async (record: BiometricRecord): Promise<void> => {
-    setBiometricRecords(prev => {
-      const idx = prev.findIndex(r => r.id === record.id);
-      if (idx >= 0) {
-        const updated = [...prev];
-        updated[idx] = record;
-        return updated;
-      }
-      return [record, ...prev];
-    });
-    addAuditLog('Update Attendance Log', 'Biometrics', record.id, `Manual adjustment/entry for ${record.employeeName} on ${record.date}`);
-  };
-
-  const verifyBiometricRecord = async (recordId: string, verifiedBy: string): Promise<void> => {
-    setBiometricRecords(prev => prev.map(r => {
-      if (r.id === recordId) {
-        return {
-          ...r,
-          verifiedBy,
-          verifiedAt: new Date().toISOString()
-        };
-      }
-      return r;
-    }));
-    addAuditLog('Verify Attendance Record', 'Biometrics', recordId, `DTR record verified by ${verifiedBy}`);
-  };
-
   const markNotificationRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
   };
@@ -871,8 +657,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         leaveApplications,
         wellnessApplications,
         salnRecords,
-        biometricRecords,
-        terminals,
         notifications,
         auditLogs,
         settings,
@@ -898,9 +682,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         processHeadWellness,
         submitSALN,
         verifySALN,
-        syncBiometrics,
-        addOrUpdateBiometricRecord,
-        verifyBiometricRecord,
         addAuditLog,
         markNotificationRead,
         markAllNotificationsRead,
