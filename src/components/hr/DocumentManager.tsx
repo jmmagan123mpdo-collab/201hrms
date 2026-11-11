@@ -152,17 +152,28 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
         {/* Employee Switcher (Full-width on mobile) */}
         <div className="w-full md:w-auto flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2">
           <label className="text-xs font-bold text-slate-600 shrink-0">Employee Record:</label>
-          <select
-            value={selectedEmpId}
-            onChange={(e) => setSelectedEmpId(e.target.value)}
-            className="w-full sm:w-auto p-2.5 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-[#173B67] font-semibold text-slate-800"
-          >
+          <input
+            type="search"
+            list="hr-201-employee-options"
+            value={employees.find(emp => emp.id === selectedEmpId)
+              ? `${employees.find(emp => emp.id === selectedEmpId)!.lastName}, ${employees.find(emp => emp.id === selectedEmpId)!.firstName} — ${employees.find(emp => emp.id === selectedEmpId)!.employeeNumber}`
+              : ''}
+            onChange={(e) => {
+              const value = e.target.value;
+              const match = employees.find(emp =>
+                `${emp.lastName}, ${emp.firstName} — ${emp.employeeNumber}`.toLowerCase() === value.toLowerCase()
+              );
+              if (match) setSelectedEmpId(match.id);
+              else if (!value.trim()) setSelectedEmpId('');
+            }}
+            placeholder="Search employee name or employee no."
+            className="w-full sm:w-80 p-2.5 text-xs border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-[#173B67] font-semibold text-slate-800"
+          />
+          <datalist id="hr-201-employee-options">
             {employees.map(emp => (
-              <option key={emp.id} value={emp.id}>
-                {emp.lastName}, {emp.firstName} ({emp.employeeNumber} • {emp.classification})
-              </option>
+              <option key={emp.id} value={`${emp.lastName}, ${emp.firstName} — ${emp.employeeNumber}`} />
             ))}
-          </select>
+          </datalist>
         </div>
       </div>
 

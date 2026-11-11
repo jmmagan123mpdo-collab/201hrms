@@ -145,7 +145,7 @@ const MainApp: React.FC = () => {
               />
             )}
 
-            {(activeHRTab === 'masterlist' || activeHRTab === 'profiles') && (
+            {activeHRTab === 'masterlist' && (
               <EmployeeMasterlist
                 onOpenProfile={handleOpenProfile}
                 onOpen201Files={handleOpen201Files}

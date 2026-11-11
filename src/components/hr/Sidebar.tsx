@@ -127,7 +127,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* EMPLOYEE RECORDS */}
         <SectionHeader title="EMPLOYEE RECORDS" />
         <NavItem tab="masterlist" label="Employee Masterlist" icon={Users} />
-        <NavItem tab="profiles" label="Employee Profiles" icon={UserSquare2} />
         <NavItem tab="201_files" label="201 Files" icon={FolderLock} />
 
         {/* DOCUMENT MANAGEMENT */}

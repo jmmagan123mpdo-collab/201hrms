@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HRLoginModal } from '../auth/HRLoginModal.tsx';
 import { ESSLoginModal } from '../auth/ESSLoginModal.tsx';
 import { ESSRegistrationModal } from '../auth/ESSRegistrationModal.tsx';
@@ -14,13 +14,35 @@ import {
   ChevronRight,
   Sparkles,
   Lock,
-  Smartphone
+  Smartphone,
+  Download
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const [showHRLogin, setShowHRLogin] = useState(false);
   const [showESSLogin, setShowESSLogin] = useState(false);
   const [showESSRegister, setShowESSRegister] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<(Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }) | null>(null);
+  const [showInstallHelp, setShowInstallHelp] = useState(false);
+
+  useEffect(() => {
+    const handleInstallAvailable = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> });
+    };
+    window.addEventListener('beforeinstallprompt', handleInstallAvailable);
+    return () => window.removeEventListener('beforeinstallprompt', handleInstallAvailable);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (installPrompt) {
+      await installPrompt.prompt();
+      await installPrompt.userChoice;
+      setInstallPrompt(null);
+    } else {
+      setShowInstallHelp(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
@@ -54,6 +76,15 @@ export const LandingPage: React.FC = () => {
               className="h-10 w-auto object-contain"
             />
           </div>
+          <button
+            type="button"
+            onClick={handleInstallApp}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#173B67] px-3.5 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-[#122e50] transition-colors shadow-sm"
+            aria-label="Install SJHR201 app"
+          >
+            <Download className="w-4 h-4" />
+            <span>Install App</span>
+          </button>
         </div>
       </header>
 
@@ -220,6 +251,20 @@ export const LandingPage: React.FC = () => {
         </div>
 
       </main>
+
+      {showInstallHelp && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/50 p-4" role="dialog" aria-modal="true" aria-label="Install SJHR201">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
+            <h2 className="text-base font-bold text-[#173B67]">Install SJHR201</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              {(/iphone|ipad|ipod/i.test(navigator.userAgent))
+                ? 'On your iPhone or iPad, tap Share in Safari, then choose “Add to Home Screen”.'
+                : 'Use your browser menu and choose “Install app” or “Install this site as an app”. If the option is unavailable, check that you are using a supported browser and a secure HTTPS address.'}
+            </p>
+            <button type="button" onClick={() => setShowInstallHelp(false)} className="mt-4 w-full rounded-xl bg-[#173B67] px-4 py-2.5 text-sm font-semibold text-white">Close</button>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       <HRLoginModal isOpen={showHRLogin} onClose={() => setShowHRLogin(false)} />
