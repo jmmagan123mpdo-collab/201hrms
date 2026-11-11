@@ -16,7 +16,6 @@ import {
   TrendingUp,
   Building2,
   Calendar,
-  Fingerprint
 } from 'lucide-react';
 
 interface HRDashboardProps {
@@ -38,7 +37,6 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
     leaveApplications, 
     wellnessApplications, 
     salnRecords, 
-    biometricRecords,
     offices 
   } = useData();
 
@@ -101,14 +99,6 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
           >
             <Upload className="w-4 h-4" />
             <span>Scan / Upload 201</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onNavigate('biometrics')}
-            className="px-3.5 py-2 bg-white/20 hover:bg-white/30 text-white text-xs font-bold rounded-xl transition-colors flex items-center space-x-1.5 cursor-pointer"
-          >
-            <Fingerprint className="w-4 h-4" />
-            <span>Biometrics & DTR</span>
           </button>
         </div>
       </div>
@@ -323,52 +313,9 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
 
         </div>
 
-        {/* Right Column (1 col): Biometrics, SALN Monitoring & Outstanding Document Requests */}
+        {/* Right Column: SALN Monitoring & Outstanding Document Requests */}
         <div className="space-y-6">
           
-          {/* Daily Biometrics Attendance Quick Card */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <div className="p-1.5 bg-blue-100 text-[#173B67] rounded-lg">
-                  <Fingerprint className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-slate-900 text-sm">Today&apos;s Biometrics & DTR</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => onNavigate('biometrics')}
-                className="text-xs font-semibold text-[#173B67] hover:underline cursor-pointer"
-              >
-                Review Logs &rarr;
-              </button>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              ZKTeco & Anviz terminal sync for 4 municipal hall stations.
-            </p>
-
-            <div className="mt-3 p-3 bg-blue-50/60 rounded-xl border border-blue-100/80 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-600 font-medium">Logged Attendance</span>
-                <span className="text-sm font-extrabold text-[#173B67] font-mono">
-                  {biometricRecords.filter(r => r.date === '2026-02-10' && r.status !== 'Absent' && r.status !== 'On Leave').length} / {totalEmployees} Present
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-blue-100">
-                <span className="text-amber-700 font-semibold">
-                  {biometricRecords.filter(r => r.date === '2026-02-10' && r.status === 'Late / Tardy').length} Tardy Arrivals
-                </span>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('biometrics')}
-                  className="px-2 py-1 bg-[#173B67] text-white text-[10px] font-bold rounded-lg hover:bg-[#122e50] cursor-pointer"
-                >
-                  Sync Devices
-                </button>
-              </div>
-            </div>
-          </div>
-
           {/* SALN Monitoring Quick Card */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
             <div className="flex items-center justify-between mb-3">

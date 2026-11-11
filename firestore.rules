@@ -124,15 +124,6 @@ service cloud.firestore {
       allow delete: if isHRAdmin();
     }
 
-    // Biometric & Daily Attendance Records
-    match /biometricRecords/{recordId} {
-      allow read: if isSignedIn() && (
-        isHRStaff() || resource.data.employeeId == getUserData().employeeId
-      );
-      allow create, update: if isHRStaff();
-      allow delete: if isHRAdmin();
-    }
-
     // Notifications
     match /notifications/{notificationId} {
       allow read: if isSignedIn() && (

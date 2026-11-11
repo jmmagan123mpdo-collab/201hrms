@@ -111,74 +111,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [documents, setDocuments] = useState<EmployeeDocument[]>(() => {
     const saved = localStorage.getItem('sjhr201_documents');
     if (saved) return JSON.parse(saved);
-    // Seed initial documents for first 2 employees
-    return [
-      {
-        id: 'doc-001',
-        employeeId: 'EMP-2022-001',
-        categoryId: 'cat-01',
-        documentTypeCode: 'PDS_212',
-        documentName: 'Personal Data Sheet (CS Form 212 Revised 2017)',
-        status: 'verified',
-        privacy: 'employee_accessible',
-        isRequired: true,
-        fileName: 'PDS_MariaSantosReyes_2024.pdf',
-        fileSize: 2450000,
-        uploadedBy: 'Elena Castillo',
-        uploaderRole: 'hr_admin',
-        uploadedAt: '2024-03-10T10:00:00.000Z',
-        verifiedBy: 'Elena Castillo',
-        verifiedAt: '2024-03-10T14:00:00.000Z',
-        version: 1
-      },
-      {
-        id: 'doc-002',
-        employeeId: 'EMP-2022-001',
-        categoryId: 'cat-02',
-        documentTypeCode: 'APPOINTMENT_PAPER',
-        documentName: 'CSC Attested Appointment Paper',
-        status: 'verified',
-        privacy: 'employee_accessible',
-        isRequired: true,
-        fileName: 'CSC_Appointment_HRMO_II_MSReyes.pdf',
-        fileSize: 1820000,
-        uploadedBy: 'Ricardo Manalo',
-        uploaderRole: 'hr_staff',
-        uploadedAt: '2022-04-01T08:00:00.000Z',
-        verifiedBy: 'Elena Castillo',
-        verifiedAt: '2022-04-02T09:00:00.000Z',
-        version: 1
-      },
-      {
-        id: 'doc-003',
-        employeeId: 'EMP-2022-001',
-        categoryId: 'cat-07',
-        documentTypeCode: 'SALN_ANNUAL',
-        documentName: 'Sworn Annual SALN Form (CSC Revised 2015)',
-        status: 'missing_required',
-        privacy: 'hr_restricted',
-        isRequired: true,
-        version: 0
-      },
-      {
-        id: 'doc-004',
-        employeeId: 'EMP-2023-045',
-        categoryId: 'cat-01',
-        documentTypeCode: 'PDS_212',
-        documentName: 'Personal Data Sheet (CS Form 212 Revised 2017)',
-        status: 'verified',
-        privacy: 'employee_accessible',
-        isRequired: true,
-        fileName: 'PDS_Juan_DelaCruz_2025.pdf',
-        fileSize: 3100000,
-        uploadedBy: 'Juan Dela Cruz',
-        uploaderRole: 'employee',
-        uploadedAt: '2025-01-20T11:00:00.000Z',
-        verifiedBy: 'Elena Castillo',
-        verifiedAt: '2025-01-22T10:00:00.000Z',
-        version: 1
-      }
-    ];
+    // Start with an empty document register; no demonstration records.
+    return [];
   });
 
   const [requests, setRequests] = useState<DocumentRequest[]>(() => {

@@ -217,34 +217,6 @@
         "timestamp": { "type": "string" }
       },
       "required": ["id", "actorName", "action", "targetEntity", "timestamp"]
-    },
-    "BiometricRecord": {
-      "title": "BiometricRecord",
-      "description": "Daily employee time-in and time-out attendance records from municipal biometric terminals",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "employeeId": { "type": "string" },
-        "employeeName": { "type": "string", "maxLength": 100 },
-        "employeeNumber": { "type": "string", "maxLength": 30 },
-        "officeName": { "type": "string", "maxLength": 150 },
-        "position": { "type": "string", "maxLength": 100 },
-        "date": { "type": "string" },
-        "amIn": { "type": "string" },
-        "amOut": { "type": "string" },
-        "pmIn": { "type": "string" },
-        "pmOut": { "type": "string" },
-        "tardyMinutes": { "type": "number" },
-        "undertimeMinutes": { "type": "number" },
-        "totalHours": { "type": "number" },
-        "status": { "type": "string", "enum": ["On Time", "Late / Tardy", "Undertime", "Half Day", "Absent", "On Leave", "Official Business (OB)"] },
-        "terminalId": { "type": "string" },
-        "terminalName": { "type": "string" },
-        "verificationMethod": { "type": "string" },
-        "syncStatus": { "type": "string", "enum": ["synced", "pending_sync", "manual"] },
-        "syncedAt": { "type": "string" }
-      },
-      "required": ["id", "employeeId", "employeeName", "date", "status", "syncStatus"]
     }
   },
   "firestore": {
@@ -280,10 +252,7 @@
       "schema": "SALNRecord",
       "description": "Collection of employee SALN records"
     },
-    "/biometricRecords/{recordId}": {
-      "schema": "BiometricRecord",
-      "description": "Collection of daily biometric time-in and time-out logs"
-    },
+
     "/notifications/{notificationId}": {
       "schema": "SystemNotification",
       "description": "In-app notifications for users"

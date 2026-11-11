@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import { DataProvider, useData } from './context/DataContext.tsx';
 import { Header } from './components/common/Header.tsx';
+import PWAInstallPrompt from './components/common/PWAInstallPrompt.tsx';
 import { LandingPage } from './components/landing/LandingPage.tsx';
 import { Sidebar, HRTab } from './components/hr/Sidebar.tsx';
 import { HRDashboard } from './components/hr/HRDashboard.tsx';
@@ -18,7 +19,6 @@ import { LeaveWellnessManager } from './components/hr/LeaveWellnessManager.tsx';
 import { OfficeDirectory } from './components/hr/OfficeDirectory.tsx';
 import { SALNManager } from './components/hr/SALNManager.tsx';
 import { MigrationCenter } from './components/hr/MigrationCenter.tsx';
-import { BiometricsManager } from './components/hr/BiometricsManager.tsx';
 import { DeveloperCenter } from './components/hr/DeveloperCenter.tsx';
 import { AddEmployeeModal } from './components/hr/AddEmployeeModal.tsx';
 import { CreateRequestModal } from './components/hr/CreateRequestModal.tsx';
@@ -184,10 +184,6 @@ const MainApp: React.FC = () => {
               <MigrationCenter />
             )}
 
-            {activeHRTab === 'biometrics' && (
-              <BiometricsManager />
-            )}
-
             {activeHRTab === 'developer_control' && (
               <DeveloperCenter />
             )}
@@ -345,6 +341,7 @@ export default function App() {
     <DataProvider>
       <AuthProvider>
         <MainApp />
+        <PWAInstallPrompt />
       </AuthProvider>
     </DataProvider>
   );

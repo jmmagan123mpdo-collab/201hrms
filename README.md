@@ -1,20 +1,18 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# SJHR201 – LGU San Jose HRMIS
 
-# Run and deploy your AI Studio app
+Private-source application. Stack: React, TypeScript, Vite, Firebase, GitHub and Vercel.
 
-This contains everything you need to run your app locally.
+## Local development
+1. Install Node.js (LTS).
+2. Run `npm install`.
+3. Configure Firebase web app values in `.env.local` using `.env.example` as a guide. Never commit secrets.
+4. Run `npm run dev`.
+5. Run `npm run build` before deployment.
 
-View your app in AI Studio: https://ai.studio/apps/c41a070c-1eb0-4cba-9adf-7f85ec3e27de
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Important
+- Demo employee, document, leave, wellness, SALN and ESS request records have been cleared.
+- Existing portal account usernames and role definitions are retained in the starter account list.
+- Authentication must be connected to Firebase Authentication and protected by Firestore/Storage security rules before production use. Do not use hard-coded demo passwords for real personnel data.
+- Attendance and biometrics are excluded.
+- PWA manifest and service worker are included; test installation over HTTPS after deployment.
+- This starter is not yet certified for production HR/payroll processing. Validate workflows, legal requirements, access controls and audit logging before launch.

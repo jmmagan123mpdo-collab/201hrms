@@ -22,7 +22,6 @@ import {
   Wallet,
   Sparkles,
   ClipboardList,
-  Fingerprint,
   X
 } from 'lucide-react';
 
@@ -34,7 +33,6 @@ export type HRTab =
   | 'requests'
   | 'verification'
   | 'migration'
-  | 'biometrics'
   | 'leave'
   | 'wellness'
   | 'travel_orders'
@@ -149,7 +147,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* HR OPERATIONS */}
         <SectionHeader title="HR OPERATIONS" />
-        <NavItem tab="biometrics" label="Biometrics & Attendance" icon={Fingerprint} />
         <NavItem tab="overtime" label="Overtime" icon={History} />
         <NavItem tab="payroll" label="Payroll" icon={Wallet} />
         <NavItem tab="payslips" label="Payslips" icon={CreditCard} />
