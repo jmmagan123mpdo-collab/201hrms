@@ -24,12 +24,7 @@ export const SALNManager: React.FC = () => {
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  // Applicable personnel: Permanent, Casual, Elective (JO/COS usually exempt from SALN unless mandated)
-  const coveredEmployees = employees.filter(e => 
-    e.classification === 'Permanent' || 
-    e.classification === 'Casual' || 
-    e.classification === 'Elective Officials'
-  );
+  // Do not infer SALN coverage from employment classification. Coverage must follow configured applicable rules.
 
   const filteredRecords = salnRecords.filter(s => {
     const matchesOffice = filterOffice === 'all' || s.officeName === filterOffice;
@@ -91,9 +86,9 @@ export const SALNManager: React.FC = () => {
       {/* Metrics Row - Side-by-Side 2x2 Grid on Mobile */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
         <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-xs">
-          <span className="text-[11px] sm:text-xs text-slate-500 block font-semibold truncate">Mandated Staff</span>
-          <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-1 block">{coveredEmployees.length}</span>
-          <span className="text-[10px] text-slate-400 block truncate">Perm, Casual & Elective</span>
+          <span className="text-[11px] sm:text-xs text-slate-500 block font-semibold truncate">Employees in Masterlist</span>
+          <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-1 block">{employees.length}</span>
+          <span className="text-[10px] text-slate-400 block truncate">Coverage determined by applicable rules</span>
         </div>
         <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-xs">
           <span className="text-[11px] sm:text-xs text-slate-500 block font-semibold truncate">Verified Compliant</span>

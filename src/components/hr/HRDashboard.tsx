@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Building2,
   Calendar,
+  CreditCard
 } from 'lucide-react';
 
 interface HRDashboardProps {
@@ -37,6 +38,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
     leaveApplications, 
     wellnessApplications, 
     salnRecords, 
+    biometricRecords,
     offices 
   } = useData();
 
@@ -99,6 +101,14 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
           >
             <Upload className="w-4 h-4" />
             <span>Scan / Upload 201</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigate('payroll')}
+            className="px-3.5 py-2 bg-white/20 hover:bg-white/30 text-white text-xs font-bold rounded-xl transition-colors flex items-center space-x-1.5 cursor-pointer"
+          >
+            <CreditCard className="w-4 h-4" />
+            <span>Payroll & Payslips</span>
           </button>
         </div>
       </div>
@@ -240,7 +250,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                 </button>
                 <span className="text-slate-300">•</span>
                 <button
-                  onClick={() => onNavigate('wellness')}
+                  onClick={() => onNavigate('leave')}
                   className="text-xs font-semibold text-[#F28C28] hover:underline"
                 >
                   Wellness ({pendingWellness.length})
@@ -284,7 +294,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
                   {pendingWellness.map(well => (
                     <div 
                       key={well.id}
-                      onClick={() => onNavigate('wellness')}
+                      onClick={() => onNavigate('leave')}
                       className="p-3.5 rounded-xl border border-orange-100 bg-orange-50/30 hover:bg-orange-50/70 transition-colors flex items-center justify-between cursor-pointer"
                     >
                       <div className="flex items-center space-x-3">
@@ -313,9 +323,52 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({
 
         </div>
 
-        {/* Right Column: SALN Monitoring & Outstanding Document Requests */}
+        {/* Right Column (1 col): 201 Compliance, SALN Monitoring & Outstanding Document Requests */}
         <div className="space-y-6">
           
+          {/* 201 Personnel Compliance Summary Quick Card */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <div className="p-1.5 bg-blue-100 text-[#173B67] rounded-lg">
+                  <FolderLock className="w-4 h-4" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm">201 Document Checklist</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('201_files')}
+                className="text-xs font-semibold text-[#173B67] hover:underline cursor-pointer"
+              >
+                Open Files &rarr;
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              15 CSC categories configured across all 6 employment classifications.
+            </p>
+
+            <div className="mt-3 p-3 bg-blue-50/60 rounded-xl border border-blue-100/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-600 font-medium">Compliance Profiles</span>
+                <span className="text-sm font-extrabold text-[#173B67] font-mono">
+                  6 Profiles Active
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-blue-100">
+                <span className="text-emerald-700 font-semibold">
+                  Zero False Incompletes
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('201_files')}
+                  className="px-2 py-1 bg-[#173B67] text-white text-[10px] font-bold rounded-lg hover:bg-[#122e50] cursor-pointer"
+                >
+                  Audit Checklist
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* SALN Monitoring Quick Card */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
             <div className="flex items-center justify-between mb-3">

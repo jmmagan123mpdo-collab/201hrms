@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../lib/firebase.ts';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useData } from '../../context/DataContext.tsx';
 import { 
@@ -32,7 +34,14 @@ import { LeaveApplication, WellnessApplication, ESSDocumentServiceRequest, ESSRe
 import { CreateESSRequestModal } from './CreateESSRequestModal.tsx';
 import { CertificatePreviewModal } from './CertificatePreviewModal.tsx';
 import { PayslipHistoryView } from './PayslipHistoryView.tsx';
+import { MyLeaveCreditsView } from './MyLeaveCreditsView.tsx';
 import { ESSNotificationBell } from './ESSNotificationBell.tsx';
+import { 
+  MASTER_CATEGORIES, 
+  MASTER_DOCUMENTS, 
+  computeEmployeeCompliance, 
+  DocumentDefinition 
+} from '../../data/documentRequirements.ts';
 
 interface ESSDashboardProps {
   onOpenScanner: (docType?: string, docName?: string, categoryId?: string) => void;
@@ -42,7 +51,9 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
   const { currentUser, currentEmployee } = useAuth();
   const { 
     categories, 
+    employees,
     documents, 
+    uploadDocument,
     requests, 
     essServiceRequests,
     submitDocumentResponse,
@@ -50,7 +61,9 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
     submitLeaveApplication,
     wellnessApplications, 
     submitWellnessApplication,
-    notifications 
+    notifications,
+    updateEmployee,
+    addAuditLog
   } = useData();
 
   const [activeTab, setActiveTab] = useState<'overview' | '201_files' | 'requests' | 'leave' | 'wellness' | 'payslips'>('overview');
@@ -64,6 +77,7 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
   const [serviceRequestFilter, setServiceRequestFilter] = useState<'all' | 'pending' | 'processing' | 'ready' | 'released'>('all');
 
   // Leave Form State
+  const [leaveSubTab, setLeaveSubTab] = useState<'applications' | 'credits'>('applications');
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [leaveType, setLeaveType] = useState<any>('Vacation');
   const [leaveDetails, setLeaveDetails] = useState('');
@@ -80,7 +94,8 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
 
   // Filter items for current logged-in employee
   const employeeId = currentUser?.employeeId || currentEmployee?.id || 'EMP-2022-001';
-  const employeeName = currentUser?.displayName || 'Municipal Employee';
+  const employeeRecord = employees.find(e => e.id === employeeId) || currentEmployee;
+  const employeeName = currentUser?.displayName || (employeeRecord ? `${employeeRecord.firstName} ${employeeRecord.lastName}` : 'Municipal Employee');
 
   const myDocuments = documents.filter(d => d.employeeId === employeeId && d.privacy === 'employee_accessible');
   const myRequests = requests.filter(r => r.employeeId === employeeId);
@@ -148,6 +163,29 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
     setWellnessDate('');
   };
 
+  const handleProfilePictureChange = async (file?: File) => {
+    if (!file || !currentEmployee) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      window.alert('Please upload a JPG, PNG, or WEBP image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      window.alert('Profile pictures must be 5 MB or smaller.');
+      return;
+    }
+    try {
+      const path = `employee-profile/${currentEmployee.id}/profile-${Date.now()}.${file.type.split('/')[1]}`;
+      const target = storageRef(storage, path);
+      await uploadBytes(target, file, { contentType: file.type });
+      const url = await getDownloadURL(target);
+      await updateEmployee(currentEmployee.id, { profilePictureUrl: url, profilePicturePath: path });
+      addAuditLog('Update Profile Picture', 'Employee', currentEmployee.id, 'Employee updated their ESS profile picture');
+    } catch (error) {
+      console.error('Profile picture upload failed', error);
+      window.alert('The profile picture could not be uploaded. Please check your connection and try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-orange-50/20 font-sans pb-24 md:pb-12">
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
@@ -155,9 +193,12 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
         {/* ESS Top Personnel Banner with Orange Theme (#F28C28) */}
         <div className="bg-gradient-to-r from-[#F28C28] to-[#ea580c] rounded-2xl p-4 sm:p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center text-lg sm:text-xl font-bold shadow-inner shrink-0">
-              {employeeName.charAt(0)}
-            </div>
+            <label className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center text-lg sm:text-xl font-bold shadow-inner shrink-0 overflow-hidden cursor-pointer" title="Change profile picture">
+              {employeeRecord?.profilePictureUrl
+                ? <img src={employeeRecord.profilePictureUrl} alt="Employee profile" className="w-full h-full object-cover" />
+                : employeeName.charAt(0)}
+              <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={e => { void handleProfilePictureChange(e.target.files?.[0]); e.currentTarget.value = ''; }} />
+            </label>
             <div>
               <div className="text-[10px] sm:text-[11px] font-bold text-orange-100 uppercase tracking-widest flex items-center space-x-1.5">
                 <span>Employee Self-Service (ESS)</span>
@@ -515,120 +556,230 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
           </div>
         )}
 
-        {/* TAB 2: MY 201 PERSONNEL FILES (Mobile Responsive Stacking) */}
-        {activeTab === '201_files' && (
-          <div className="space-y-3 sm:space-y-4">
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="font-bold text-sm text-slate-900">201 Personnel Documents</h3>
-                <p className="text-xs text-slate-500">
-                  CSC Form 212, appointment papers, TOR, training certificates, and clearances.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => onOpenScanner()}
-                className="w-full sm:w-auto px-4 py-2.5 bg-[#F28C28] hover:bg-[#d9771a] text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
-              >
-                <Camera className="w-4 h-4" />
-                <span>Scan New Document</span>
-              </button>
-            </div>
+        {/* TAB 2: MY 201 PERSONNEL FILES & DOCUMENT CHECKLIST */}
+        {activeTab === '201_files' && (() => {
+          const empClassification = currentEmployee?.classification || 'Permanent';
+          const myCompliance = computeEmployeeCompliance(empClassification, myDocuments);
 
-            <div className="space-y-3">
-              {categories.map(cat => {
-                const accessibleTypes = cat.documentTypes.filter(t => t.privacy === 'employee_accessible');
-                if (accessibleTypes.length === 0) return null;
+          return (
+            <div className="space-y-4">
+              
+              {/* Classification Compliance Header */}
+              <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <FolderLock className="w-5 h-5 text-[#F28C28]" />
+                      <h3 className="font-bold text-sm sm:text-base text-slate-900">
+                        My 201 File Checklist & Document Requirements
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Personal requirements profile tailored for <strong className="text-slate-800">{empClassification}</strong> personnel of LGU San Jose.
+                    </p>
+                  </div>
 
-                const isExpanded = !!expandedCategories[cat.id];
-
-                return (
-                  <div key={cat.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+                  <div className="flex items-center space-x-2">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-[#F28C28] border border-orange-200">
+                      Profile: {empClassification}
+                    </span>
                     <button
                       type="button"
-                      onClick={() => toggleCategory(cat.id)}
-                      className="w-full px-4 py-3 bg-slate-50 hover:bg-slate-100/70 transition-colors flex items-center justify-between text-left cursor-pointer"
+                      onClick={() => onOpenScanner()}
+                      className="px-3 py-1.5 bg-[#F28C28] hover:bg-[#d9771a] text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center space-x-1 cursor-pointer"
                     >
-                      <div className="flex items-center space-x-2">
-                        {isExpanded ? <ChevronDown className="w-4 h-4 text-slate-500" /> : <ChevronRight className="w-4 h-4 text-slate-500" />}
-                        <span className="font-bold text-xs text-slate-800">{cat.name}</span>
-                      </div>
-                      <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium shrink-0">
-                        {accessibleTypes.length} types
-                      </span>
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Quick Scan</span>
                     </button>
+                  </div>
+                </div>
 
-                    {isExpanded && (
-                      <div className="p-3 sm:p-4 divide-y divide-slate-100">
-                        {accessibleTypes.map(docType => {
-                          const docRecord = documents.find(d => 
-                            d.employeeId === employeeId && 
-                            d.categoryId === cat.id && 
-                            d.documentTypeCode === docType.code
-                          );
+                {/* Status KPI Badges (5 Required Categories) */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-100">
+                  <div className="bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl">
+                    <span className="text-[10px] font-bold text-emerald-800 uppercase block">Verified (Green)</span>
+                    <div className="text-base font-bold text-emerald-900 mt-0.5">{myCompliance.verified}</div>
+                    <span className="text-[10px] text-emerald-700">{myCompliance.complianceScore}% compliant</span>
+                  </div>
 
-                          const isVerified = docRecord?.status === 'verified';
-                          const isForReview = docRecord?.status === 'for_review';
-                          const isReturned = docRecord?.status === 'returned';
+                  <div className="bg-rose-50 border border-rose-200 p-2.5 rounded-xl">
+                    <span className="text-[10px] font-bold text-rose-800 uppercase block">Missing Required (Red)</span>
+                    <div className="text-base font-bold text-rose-900 mt-0.5">{myCompliance.missingRequired}</div>
+                    <span className="text-[10px] text-rose-700">Immediate submission</span>
+                  </div>
 
-                          return (
-                            <div key={docType.code} className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-                              <div>
-                                <div className="flex items-center space-x-1.5 flex-wrap">
-                                  <span className="text-xs font-bold text-slate-900">{docType.name}</span>
-                                  {docType.isRequiredFor.includes(currentEmployee?.classification || 'Permanent') && (
-                                    <span className="text-[9px] bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.2 rounded font-bold uppercase">
-                                      Required
+                  <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-xl">
+                    <span className="text-[10px] font-bold text-amber-800 uppercase block">Missing Optional (Yellow)</span>
+                    <div className="text-base font-bold text-amber-900 mt-0.5">{myCompliance.missingOptional}</div>
+                    <span className="text-[10px] text-amber-700">Informational only</span>
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 p-2.5 rounded-xl">
+                    <span className="text-[10px] font-bold text-blue-800 uppercase block">For Review (Blue)</span>
+                    <div className="text-base font-bold text-blue-900 mt-0.5">{myCompliance.forReview}</div>
+                    <span className="text-[10px] text-blue-700">Pending HR audit</span>
+                  </div>
+
+                  <div className="bg-orange-50 border border-orange-200 p-2.5 rounded-xl col-span-2 sm:col-span-1">
+                    <span className="text-[10px] font-bold text-orange-800 uppercase block">Returned (Orange)</span>
+                    <div className="text-base font-bold text-orange-900 mt-0.5">{myCompliance.returned}</div>
+                    <span className="text-[10px] text-orange-700">Needs correction</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Master 15 Categories Filtered for Employee */}
+              <div className="space-y-3">
+                {MASTER_CATEGORIES.map(cat => {
+                  // Get documents for this category applicable to this employee's classification
+                  const applicableDocs = MASTER_DOCUMENTS.filter(d => {
+                    if (d.categoryId !== cat.id) return false;
+                    const reqLevel = d.requirementsByClassification[empClassification];
+                    if (reqLevel === 'NOT_APPLICABLE') return false;
+                    // Protect highly confidential medical or disciplinary records from direct employee view
+                    if (d.privacy === 'highly_confidential') return false;
+                    return true;
+                  });
+
+                  if (applicableDocs.length === 0) return null;
+
+                  const isExpanded = !!expandedCategories[cat.id];
+
+                  return (
+                    <div key={cat.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+                      <button
+                        type="button"
+                        onClick={() => toggleCategory(cat.id)}
+                        className="w-full px-4 sm:px-5 py-3 bg-slate-50/80 hover:bg-slate-100 transition-colors flex items-center justify-between text-left cursor-pointer"
+                      >
+                        <div className="flex items-center space-x-2.5 min-w-0">
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-slate-500" /> : <ChevronRight className="w-4 h-4 text-slate-500" />}
+                          <span className="font-bold text-xs sm:text-sm text-slate-800 truncate">{cat.name}</span>
+                        </div>
+                        <span className="text-[11px] text-slate-500 font-medium shrink-0">
+                          {applicableDocs.length} required items
+                        </span>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="p-3 sm:p-4 divide-y divide-slate-100 space-y-2">
+                          {applicableDocs.map(docDef => {
+                            const reqLevel = docDef.requirementsByClassification[empClassification];
+                            const isRequired = reqLevel === 'REQUIRED' || reqLevel === 'CONDITIONAL';
+
+                            const docRecord = myDocuments.find(d => d.documentTypeCode === docDef.code);
+
+                            const isVerified = docRecord?.status === 'verified';
+                            const isForReview = docRecord?.status === 'for_review';
+                            const isReturned = docRecord?.status === 'returned';
+
+                            return (
+                              <div key={docDef.code} className="py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5">
+                                <div className="space-y-1 min-w-0 flex-1">
+                                  <div className="flex items-center space-x-2 flex-wrap">
+                                    <span className="font-bold text-xs text-slate-900">{docDef.name}</span>
+                                    <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                                      isRequired ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-slate-100 text-slate-600'
+                                    }`}>
+                                      {reqLevel}
                                     </span>
+
+                                    {/* Status Pill */}
+                                    {isVerified ? (
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center space-x-1">
+                                        <CheckCircle2 className="w-3 h-3 inline mr-0.5" /> Verified
+                                      </span>
+                                    ) : isForReview ? (
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 flex items-center space-x-1">
+                                        <Clock className="w-3 h-3 inline mr-0.5" /> For Review
+                                      </span>
+                                    ) : isReturned ? (
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800 border border-orange-200 flex items-center space-x-1">
+                                        <AlertCircle className="w-3 h-3 inline mr-0.5" /> Returned for Correction
+                                      </span>
+                                    ) : isRequired ? (
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                        Missing (Required)
+                                      </span>
+                                    ) : (
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                        Missing (Optional)
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <p className="text-[11px] text-slate-500">{docDef.description}</p>
+
+                                  {/* Return Remarks Alert */}
+                                  {isReturned && docRecord?.remarks && (
+                                    <div className="p-2 bg-orange-50 border border-orange-200 rounded-lg text-[11px] text-orange-900 mt-1">
+                                      <strong>HR Correction Note:</strong> {docRecord.remarks}
+                                    </div>
+                                  )}
+
+                                  {docRecord?.fileName && (
+                                    <div className="text-[10px] text-slate-500 font-mono flex items-center space-x-2 pt-0.5">
+                                      <span>Uploaded: {docRecord.fileName} (v{docRecord.version})</span>
+                                    </div>
                                   )}
                                 </div>
-                                {docRecord?.fileName && (
-                                  <span className="text-[10px] sm:text-[11px] text-slate-500 block font-mono mt-0.5">
-                                    File: {docRecord.fileName} • v{docRecord.version}
-                                  </span>
-                                )}
-                              </div>
 
-                              <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end space-x-2 shrink-0 pt-1 sm:pt-0">
-                                {isVerified ? (
-                                  <span className="inline-flex items-center space-x-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                    <span>Verified</span>
-                                  </span>
-                                ) : isForReview ? (
-                                  <span className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold">
-                                    <Clock className="w-3.5 h-3.5" />
-                                    <span>In Review</span>
-                                  </span>
-                                ) : isReturned ? (
-                                  <span className="inline-flex items-center space-x-1 px-2.5 py-1 bg-orange-50 text-orange-700 border border-orange-200 rounded-lg text-xs font-bold">
-                                    <AlertCircle className="w-3.5 h-3.5" />
-                                    <span>Returned</span>
-                                  </span>
-                                ) : (
-                                  <span className="text-xs text-slate-400 font-medium">Missing</span>
-                                )}
+                                {/* Right: Upload / Scanner Controls */}
+                                <div className="flex items-center space-x-2 shrink-0 self-end md:self-center">
+                                  {docDef.canEmployeeUpload && (
+                                    <label className="px-3 py-1.5 bg-[#F28C28] hover:bg-[#d9771a] text-white text-xs font-bold rounded-xl transition-all shadow-2xs flex items-center space-x-1 cursor-pointer">
+                                      <Upload className="w-3.5 h-3.5" />
+                                      <span>{docRecord ? 'Re-upload' : 'Upload File'}</span>
+                                      <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={async (e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file && currentEmployee) {
+                                            const dummyUrl = URL.createObjectURL(file);
+                                            await uploadDocument({
+                                              employeeId: currentEmployee.id,
+                                              categoryId: docDef.categoryId,
+                                              documentTypeCode: docDef.code,
+                                              documentName: docDef.name,
+                                              status: 'for_review',
+                                              privacy: docDef.privacy,
+                                              isRequired,
+                                              fileUrl: dummyUrl,
+                                              fileName: file.name,
+                                              fileSize: file.size,
+                                              fileType: file.type,
+                                              uploadedBy: currentUser?.displayName || 'Employee',
+                                              uploaderRole: 'employee'
+                                            });
+                                          }
+                                        }}
+                                      />
+                                    </label>
+                                  )}
 
-                                <button
-                                  type="button"
-                                  onClick={() => onOpenScanner(docType.code, docType.name, cat.id)}
-                                  className="px-3 py-1.5 text-xs font-bold text-[#F28C28] hover:bg-orange-50 border border-orange-200 rounded-xl transition-colors cursor-pointer flex items-center space-x-1"
-                                >
-                                  <Camera className="w-3.5 h-3.5" />
-                                  <span>{docRecord ? 'Update' : 'Scan'}</span>
-                                </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => onOpenScanner(docDef.code, docDef.name, cat.id)}
+                                    className="p-1.5 text-slate-600 hover:text-[#F28C28] hover:bg-orange-50 border border-slate-200 rounded-xl transition-colors cursor-pointer"
+                                    title="Scan Document with Camera"
+                                  >
+                                    <Camera className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* TAB: REQUESTS (TWO-WAY: ESS Document & Service Requests + HR Document Submissions) */}
         {activeTab === 'requests' && (
@@ -912,63 +1063,103 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
           <PayslipHistoryView />
         )}
 
-        {/* TAB 3: LEAVE APPLICATIONS (CSC FORM 6) */}
+        {/* TAB 3: LEAVE APPLICATIONS (CSC FORM 6) & CREDITS LEDGER */}
         {activeTab === 'leave' && (
           <div className="space-y-3 sm:space-y-4">
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="font-bold text-sm text-slate-900">Application for Leave (CSC Form 6)</h3>
-                <p className="text-xs text-slate-500">
-                  Routing to Immediate Supervisor, Municipal Mayor, and HR Recording.
-                </p>
-              </div>
+            {/* Subtab Navigation */}
+            <div className="flex items-center space-x-2 border-b border-slate-200 pb-1">
               <button
                 type="button"
-                onClick={() => setShowLeaveModal(true)}
-                className="w-full sm:w-auto px-4 py-2 bg-[#F28C28] hover:bg-[#d9771a] text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
+                onClick={() => setLeaveSubTab('applications')}
+                className={`py-2 px-3 text-xs font-bold border-b-2 transition-colors cursor-pointer flex items-center space-x-1.5 ${
+                  leaveSubTab === 'applications'
+                    ? 'border-[#F28C28] text-[#F28C28]'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
               >
-                <PlusCircle className="w-4 h-4" />
-                <span>New Leave Application</span>
+                <span>CSC Form 6 Applications</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-orange-100 text-[#F28C28] font-bold">
+                  {myLeaves.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLeaveSubTab('credits')}
+                className={`py-2 px-3 text-xs font-bold border-b-2 transition-colors cursor-pointer flex items-center space-x-1.5 ${
+                  leaveSubTab === 'credits'
+                    ? 'border-[#F28C28] text-[#F28C28]'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <span>My Leave Credits Ledger (Sec. 16)</span>
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-bold">
+                  Live Balances
+                </span>
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden shadow-xs">
-              {myLeaves.length === 0 ? (
-                <div className="p-8 text-center text-xs text-slate-400">
-                  You have not submitted any leave applications yet.
-                </div>
-              ) : (
-                myLeaves.map(leave => (
-                  <div key={leave.id} className="p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-mono font-bold text-xs text-[#173B67]">{leave.id}</span>
-                        <span className="text-xs font-bold text-slate-900">{leave.leaveType} Leave</span>
-                      </div>
-                      <p className="text-xs text-slate-600 mt-0.5">{leave.detailsOfLeave}</p>
-                      <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block">
-                        Inclusive Dates: {leave.inclusiveDates} ({leave.workingDays} working days)
-                      </span>
-                    </div>
-
-                    <div className="text-right self-end sm:self-center">
-                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                        leave.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
-                        leave.status === 'disapproved' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {leave.status === 'pending_supervisor' ? 'Pending Supervisor' :
-                         leave.status === 'pending_mayor' ? 'Pending Mayor' : leave.status}
-                      </span>
-                      {leave.supervisorRemarks && (
-                        <span className="text-[10px] text-slate-500 block mt-1">
-                          Supv: {leave.supervisorRemarks}
-                        </span>
-                      )}
-                    </div>
+            {leaveSubTab === 'credits' ? (
+              <MyLeaveCreditsView />
+            ) : (
+              <>
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-900">Application for Leave (CSC Form 6)</h3>
+                    <p className="text-xs text-slate-500">
+                      Multi-tier routing to Immediate Supervisor, Municipal Mayor, and HR Recording.
+                    </p>
                   </div>
-                ))
-              )}
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowLeaveModal(true)}
+                    className="w-full sm:w-auto px-4 py-2 bg-[#F28C28] hover:bg-[#d9771a] text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    <span>New Leave Application</span>
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden shadow-xs">
+                  {myLeaves.length === 0 ? (
+                    <div className="p-8 text-center text-xs text-slate-400">
+                      You have not submitted any leave applications yet.
+                    </div>
+                  ) : (
+                    myLeaves.map(leave => (
+                      <div key={leave.id} className="p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <span className="font-mono font-bold text-xs text-[#173B67]">{leave.id}</span>
+                            <span className="text-xs font-bold text-slate-900">{leave.leaveType} Leave</span>
+                          </div>
+                          <p className="text-xs text-slate-600 mt-0.5">{leave.detailsOfLeave}</p>
+                          <span className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 block">
+                            Inclusive Dates: {leave.inclusiveDates} ({leave.workingDays} working days)
+                          </span>
+                        </div>
+
+                        <div className="text-right self-end sm:self-center">
+                          <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                            leave.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
+                            leave.status === 'disapproved' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {leave.status === 'pending_supervisor' ? 'Pending Supervisor' :
+                             leave.status === 'pending_mayor' ? 'Pending Mayor' : 
+                             leave.status === 'pending_hr_final' ? 'Pending HR Final' : leave.status}
+                          </span>
+                          {leave.supervisorRemarks && (
+                            <span className="text-[10px] text-slate-500 block mt-1">
+                              Supv: {leave.supervisorRemarks}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
 

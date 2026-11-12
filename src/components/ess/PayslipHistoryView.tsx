@@ -4,6 +4,7 @@ import { PayslipRecord } from '../../types/index.ts';
 import { generateHistoricalPayslips } from '../../data/payslipData.ts';
 import { PayslipPrintModal } from './PayslipPrintModal.tsx';
 import { CreateESSRequestModal } from './CreateESSRequestModal.tsx';
+import { CustomPayslipModal } from '../hr/CustomPayslipModal.tsx';
 import { 
   CreditCard, 
   Printer, 
@@ -11,6 +12,7 @@ import {
   Calendar, 
   Download, 
   PlusCircle, 
+  Plus,
   CheckCircle2, 
   Building2, 
   TrendingUp, 
@@ -33,14 +35,21 @@ export const PayslipHistoryView: React.FC = () => {
   const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>('all');
   const [selectedPayslipForModal, setSelectedPayslipForModal] = useState<PayslipRecord | null>(null);
   const [showRequestCertifiedModal, setShowRequestCertifiedModal] = useState<boolean>(false);
+  const [showCustomModal, setShowCustomModal] = useState<boolean>(false);
+  const [customPayslips, setCustomPayslips] = useState<PayslipRecord[]>([]);
+
+  // Combined historical and custom generated payslips
+  const allPayslips = useMemo(() => {
+    return [...customPayslips, ...historicalPayslips];
+  }, [customPayslips, historicalPayslips]);
 
   // Available Years
   const availableYears = [2026, 2025, 2024];
 
   // Filter payslips for the selected year
   const yearPayslips = useMemo(() => {
-    return historicalPayslips.filter(p => p.year === selectedYear);
-  }, [historicalPayslips, selectedYear]);
+    return allPayslips.filter(p => p.year === selectedYear);
+  }, [allPayslips, selectedYear]);
 
   // Apply month filter
   const displayedPayslips = useMemo(() => {
@@ -75,7 +84,16 @@ export const PayslipHistoryView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowCustomModal(true)}
+            className="w-full sm:w-auto px-4 py-2.5 bg-[#173B67] hover:bg-[#122e50] text-white font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5 cursor-pointer text-xs"
+          >
+            <Plus className="w-4 h-4 text-amber-300" />
+            <span>Generate Custom Payslip</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setShowRequestCertifiedModal(true)}
@@ -381,6 +399,23 @@ export const PayslipHistoryView: React.FC = () => {
         onClose={() => setShowRequestCertifiedModal(false)}
         initialType="PAYSLIP"
       />
+
+      {/* Custom Payslip Generator Modal for ESS */}
+      {currentEmployee && (
+        <CustomPayslipModal
+          isOpen={showCustomModal}
+          onClose={() => setShowCustomModal(false)}
+          employees={[currentEmployee]}
+          initialEmployee={currentEmployee}
+          onSavePayslip={(newPs) => {
+            setCustomPayslips(prev => [newPs, ...prev]);
+            setSelectedYear(newPs.year);
+          }}
+          onPrintDirectly={(newPs) => {
+            setSelectedPayslipForModal(newPs);
+          }}
+        />
+      )}
 
     </div>
   );

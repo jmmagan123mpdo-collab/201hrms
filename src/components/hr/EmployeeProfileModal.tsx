@@ -21,6 +21,8 @@ import {
   Calendar
 } from 'lucide-react';
 
+import { computeEmployeeCompliance } from '../../data/documentRequirements.ts';
+
 interface EmployeeProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -34,7 +36,7 @@ export const EmployeeProfileModal: React.FC<EmployeeProfileModalProps> = ({
   employee,
   onOpen201Files
 }) => {
-  const { updateEmployee, offices } = useData();
+  const { updateEmployee, offices, documents } = useData();
   const { hasPermission } = useAuth();
 
   const [activeTab, setActiveTab] = useState<number>(1);
@@ -437,16 +439,135 @@ export const EmployeeProfileModal: React.FC<EmployeeProfileModalProps> = ({
                 </div>
               )}
 
-              {/* SECTION 8: EMPLOYMENT HISTORY */}
+              {/* SECTION 7: 201 FILES REQUIREMENTS & COMPLIANCE */}
+              {activeTab === 7 && (() => {
+                const empDocs = documents.filter(d => d.employeeId === employee.id);
+                const compliance = computeEmployeeCompliance(employee.classification, empDocs);
+                return (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <div>
+                        <h4 className="font-bold text-sm text-[#173B67]">
+                          201 Document Requirements ({employee.classification})
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          Classification profile compliance score: <strong className="text-slate-800">{compliance.complianceScore}%</strong>
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          onOpen201Files(employee);
+                        }}
+                        className="px-3 py-1.5 bg-[#173B67] hover:bg-[#122e50] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center space-x-1"
+                      >
+                        <FolderLock className="w-3.5 h-3.5" />
+                        <span>Open 201 Files Manager</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
+                        <span className="text-[10px] uppercase font-bold text-emerald-800 block">Verified (Green)</span>
+                        <div className="text-lg font-bold text-emerald-900 mt-1">{compliance.verified}</div>
+                        <span className="text-[10px] text-emerald-700">{compliance.verifiedRequired} of {compliance.totalRequired} required</span>
+                      </div>
+
+                      <div className="bg-rose-50 border border-rose-200 p-3 rounded-xl">
+                        <span className="text-[10px] uppercase font-bold text-rose-800 block">Missing Required (Red)</span>
+                        <div className="text-lg font-bold text-rose-900 mt-1">{compliance.missingRequired}</div>
+                        <span className="text-[10px] text-rose-700">Immediate compliance action</span>
+                      </div>
+
+                      <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl">
+                        <span className="text-[10px] uppercase font-bold text-amber-800 block">Missing Optional (Yellow)</span>
+                        <div className="text-lg font-bold text-amber-900 mt-1">{compliance.missingOptional}</div>
+                        <span className="text-[10px] text-amber-700">Informational only</span>
+                      </div>
+
+                      <div className="bg-blue-50 border border-blue-200 p-3 rounded-xl">
+                        <span className="text-[10px] uppercase font-bold text-blue-800 block">For Review (Blue)</span>
+                        <div className="text-lg font-bold text-blue-900 mt-1">{compliance.forReview}</div>
+                        <span className="text-[10px] text-blue-700">Awaiting HR audit</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                      <span className="font-bold text-slate-800 text-xs block">Active Uploaded Records ({empDocs.length})</span>
+                      {empDocs.length === 0 ? (
+                        <p className="text-xs text-slate-500">No documents uploaded yet for this personnel.</p>
+                      ) : (
+                        <div className="divide-y divide-slate-200/60 max-h-48 overflow-y-auto">
+                          {empDocs.map(d => (
+                            <div key={d.id} className="py-2 flex items-center justify-between text-xs">
+                              <span className="font-medium text-slate-800 truncate pr-2">{d.documentName}</span>
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                d.status === 'verified' ? 'bg-emerald-100 text-emerald-800' :
+                                d.status === 'for_review' ? 'bg-blue-100 text-blue-800' :
+                                d.status === 'returned' ? 'bg-orange-100 text-orange-800' :
+                                'bg-slate-100 text-slate-700'
+                              }`}>
+                                {d.status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* SECTION 8: EMPLOYMENT HISTORY & CLASSIFICATION AUDIT */}
               {activeTab === 8 && (
                 <div className="space-y-4">
-                  <h4 className="font-bold text-sm text-[#173B67] border-b pb-1">Employment Service History</h4>
-                  <div className="border-l-2 border-[#173B67] pl-3 space-y-3">
+                  <h4 className="font-bold text-sm text-[#173B67] border-b pb-1">Employment Service & Classification History</h4>
+                  
+                  {/* Current Position */}
+                  <div className="border-l-2 border-[#173B67] pl-3 space-y-2">
                     <div>
-                      <span className="font-bold text-slate-900 block">{employee.position}</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-slate-900 block text-xs">{employee.position}</span>
+                        <span className="px-2 py-0.2 bg-blue-100 text-[#173B67] rounded-full text-[10px] font-bold">
+                          Current • {employee.classification}
+                        </span>
+                      </div>
                       <span className="text-slate-500 text-[11px]">{employee.officeName} • {employee.hireDate} to Present</span>
                     </div>
                   </div>
+
+                  {/* Classification Changes Audit Log */}
+                  {employee.classificationHistory && employee.classificationHistory.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <span className="text-xs font-bold text-slate-700 block">Classification History Log:</span>
+                      <div className="space-y-2">
+                        {employee.classificationHistory.map((h, i) => (
+                          <div key={i} className="p-2.5 bg-slate-50 border rounded-xl text-xs space-y-0.5">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-slate-800">{h.classification}</span>
+                              <span className="text-[10px] text-slate-500">Effective: {h.effectiveDate}</span>
+                            </div>
+                            {h.remarks && <p className="text-[11px] text-slate-600">{h.remarks}</p>}
+                            <span className="text-[9px] text-slate-400 block">Recorded by: {h.recordedBy || 'HR Admin'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {employee.previousEmployeeNumbers && employee.previousEmployeeNumbers.length > 0 && (
+                    <div className="p-3 bg-slate-50 border rounded-xl">
+                      <span className="text-[11px] font-bold text-slate-600 block">Previous Personnel Numbers (Historical):</span>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {employee.previousEmployeeNumbers.map(num => (
+                          <span key={num} className="font-mono text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded">
+                            {num}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

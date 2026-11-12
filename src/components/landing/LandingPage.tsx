@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { HRLoginModal } from '../auth/HRLoginModal.tsx';
 import { ESSLoginModal } from '../auth/ESSLoginModal.tsx';
 import { ESSRegistrationModal } from '../auth/ESSRegistrationModal.tsx';
@@ -17,32 +17,12 @@ import {
   Smartphone,
   Download
 } from 'lucide-react';
+import { PWAInstallButton } from '../common/PWAInstallButton.tsx';
 
 export const LandingPage: React.FC = () => {
   const [showHRLogin, setShowHRLogin] = useState(false);
   const [showESSLogin, setShowESSLogin] = useState(false);
   const [showESSRegister, setShowESSRegister] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<(Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> }) | null>(null);
-  const [showInstallHelp, setShowInstallHelp] = useState(false);
-
-  useEffect(() => {
-    const handleInstallAvailable = (event: Event) => {
-      event.preventDefault();
-      setInstallPrompt(event as Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> });
-    };
-    window.addEventListener('beforeinstallprompt', handleInstallAvailable);
-    return () => window.removeEventListener('beforeinstallprompt', handleInstallAvailable);
-  }, []);
-
-  const handleInstallApp = async () => {
-    if (installPrompt) {
-      await installPrompt.prompt();
-      await installPrompt.userChoice;
-      setInstallPrompt(null);
-    } else {
-      setShowInstallHelp(true);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
@@ -69,22 +49,16 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
-            <img 
-              src="/public/assets/aistudio/HR1_5214d096.png" 
-              alt="MHRMO Official Logo" 
-              className="h-10 w-auto object-contain"
-            />
+          <div className="flex items-center space-x-3">
+            <PWAInstallButton variant="header" />
+            <div className="hidden md:flex items-center">
+              <img 
+                src="/public/assets/aistudio/HR1_5214d096.png" 
+                alt="MHRMO Official Logo" 
+                className="h-10 w-auto object-contain"
+              />
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={handleInstallApp}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#173B67] px-3.5 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-[#122e50] transition-colors shadow-sm"
-            aria-label="Install SJHR201 app"
-          >
-            <Download className="w-4 h-4" />
-            <span>Install App</span>
-          </button>
         </div>
       </header>
 
@@ -240,6 +214,31 @@ export const LandingPage: React.FC = () => {
 
         </div>
 
+        {/* PWA Mobile & Desktop Install Action Card */}
+        <div className="mt-8 max-w-4xl mx-auto w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all hover:border-blue-300">
+          <div className="flex items-center space-x-3.5 text-center sm:text-left w-full sm:w-auto">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-[#173B67] to-[#1e4e89] text-white flex items-center justify-center shrink-0 shadow-sm mx-auto sm:mx-0">
+              <Smartphone className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300" />
+            </div>
+            <div>
+              <div className="flex items-center justify-center sm:justify-start space-x-2">
+                <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                  Install SJHR201 on Your Device
+                </h4>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#173B67] border border-blue-200">
+                  PWA
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Install as a standalone application on Android, iPhone, Windows, or Mac for fast 1-tap access.
+              </p>
+            </div>
+          </div>
+          <div className="shrink-0 w-full sm:w-auto flex justify-center sm:justify-end">
+            <PWAInstallButton variant="hero" />
+          </div>
+        </div>
+
         {/* Government Footer Notice */}
         <div className="mt-14 pt-8 border-t border-slate-200 text-center text-xs text-slate-500">
           <p className="font-semibold text-slate-700">
@@ -251,20 +250,6 @@ export const LandingPage: React.FC = () => {
         </div>
 
       </main>
-
-      {showInstallHelp && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/50 p-4" role="dialog" aria-modal="true" aria-label="Install SJHR201">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
-            <h2 className="text-base font-bold text-[#173B67]">Install SJHR201</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              {(/iphone|ipad|ipod/i.test(navigator.userAgent))
-                ? 'On your iPhone or iPad, tap Share in Safari, then choose “Add to Home Screen”.'
-                : 'Use your browser menu and choose “Install app” or “Install this site as an app”. If the option is unavailable, check that you are using a supported browser and a secure HTTPS address.'}
-            </p>
-            <button type="button" onClick={() => setShowInstallHelp(false)} className="mt-4 w-full rounded-xl bg-[#173B67] px-4 py-2.5 text-sm font-semibold text-white">Close</button>
-          </div>
-        </div>
-      )}
 
       {/* Modals */}
       <HRLoginModal isOpen={showHRLogin} onClose={() => setShowHRLogin(false)} />

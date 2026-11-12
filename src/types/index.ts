@@ -82,10 +82,23 @@ export interface Employee {
   emergencyContactPhone?: string;
   emergencyContactRelation?: string;
   
+  // Shared profile photo stored in Firebase Storage; same reference used by ESS and HR
+  profilePictureUrl?: string;
+  profilePicturePath?: string;
+
   // ESS Status
   essRegistered: boolean;
   essUsername?: string;
   
+  // Employment Classification History
+  classificationHistory?: {
+    classification: EmploymentClassification;
+    effectiveDate: string;
+    remarks?: string;
+    recordedAt: string;
+    recordedBy?: string;
+  }[];
+
   createdAt: string;
   updatedAt: string;
 }
@@ -179,7 +192,16 @@ export interface Office {
   sections?: string[];
 }
 
-export type LeaveStatus = 'pending_supervisor' | 'pending_mayor' | 'approved' | 'disapproved' | 'cancelled';
+export type LeaveStatus = 
+  | 'pending_supervisor' 
+  | 'pending_mayor' 
+  | 'pending_hr_final' 
+  | 'approved' 
+  | 'disapproved' 
+  | 'returned_supervisor'
+  | 'returned_mayor'
+  | 'returned_hr'
+  | 'cancelled';
 
 export interface LeaveApplication {
   id: string;
@@ -201,7 +223,53 @@ export interface LeaveApplication {
   mayorRemarks?: string;
   mayorName?: string;
   mayorDate?: string;
+  hrFinalAction?: 'Accepted & Finalized' | 'Rejected' | 'Returned';
+  hrFinalRemarks?: string;
+  hrFinalOfficer?: string;
+  hrFinalDate?: string;
+  supervisorEmail?: string;
+  mayorEmail?: string;
+  employeeEmail?: string;
+  attachedToAccomplishmentReport?: boolean;
+  hrClarifications?: { text: string; date: string; officer: string }[];
+  approvedDaysWithPay?: number;
+  approvedDaysWithoutPay?: number;
   createdAt: string;
+}
+
+export interface InteractiveEmailMessage {
+  id: string;
+  leaveId: string;
+  toEmail: string;
+  recipientName: string;
+  recipientRole: 'supervisor' | 'mayor' | 'employee' | 'hr';
+  subject: string;
+  sentAt: string;
+  status: 'sent' | 'opened' | 'action_taken';
+  actionTaken?: 'approved' | 'disapproved' | 'printed';
+  actionTakenAt?: string;
+  employeeName: string;
+  officeName: string;
+  position: string;
+  leaveType: string;
+  workingDays: number;
+  inclusiveDates: string;
+  detailsOfLeave: string;
+  supervisorEndorsement?: {
+    endorsedBy: string;
+    endorsedAt: string;
+    remarks: string;
+  };
+  mayorApproval?: {
+    approvedBy: string;
+    approvedAt: string;
+    remarks: string;
+  };
+  hrCertification?: {
+    certifiedBy: string;
+    certifiedAt: string;
+    remarks: string;
+  };
 }
 
 export type WellnessStatus = 'pending_supervisor' | 'pending_head' | 'approved' | 'disapproved';
@@ -394,8 +462,6 @@ export interface SystemSettings {
   hrmoHead: string;
   essSelfRegistrationEnabled: boolean;
   maintenanceMode: boolean;
-  sampleSupervisorEmail?: string;
-  sampleMayorEmail?: string;
   brandColors: {
     primaryBlue: string;
     softBlue: string;
@@ -403,3 +469,164 @@ export interface SystemSettings {
   };
 }
 
+export type AttendanceStatus = 
+  | 'On Time' 
+  | 'Late / Tardy' 
+  | 'Undertime' 
+  | 'Half Day' 
+  | 'Absent' 
+  | 'On Leave' 
+  | 'Official Business (OB)';
+
+export interface BiometricTerminal {
+  id: string;
+  name: string;
+  location: string;
+  ipAddress: string;
+  model: string;
+  status: 'online' | 'offline' | 'syncing';
+  lastPing: string;
+  totalLogsStored: number;
+}
+
+export interface BiometricRecord {
+  id: string; // e.g. BIO-2026-02-10-EMP001
+  employeeId: string;
+  employeeName: string;
+  employeeNumber: string;
+  officeName: string;
+  position: string;
+  classification: EmploymentClassification;
+  date: string; // YYYY-MM-DD
+  amIn: string | null; // e.g. "07:54 AM"
+  amOut: string | null; // e.g. "12:02 PM"
+  pmIn: string | null; // e.g. "12:51 PM"
+  pmOut: string | null; // e.g. "05:05 PM"
+  tardyMinutes: number; // e.g. 0, 15
+  undertimeMinutes: number; // e.g. 0
+  totalHours: number; // e.g. 8.0
+  status: AttendanceStatus;
+  terminalId: string;
+  terminalName: string;
+  verificationMethod: 'Fingerprint' | 'Facial Recognition' | 'RFID Card' | 'Manual Log';
+  syncStatus: 'synced' | 'pending_sync' | 'manual';
+  syncedAt: string;
+  verifiedBy?: string;
+  verifiedAt?: string;
+  remarks?: string;
+}
+
+export type TravelOrderStatus = 'Draft' | 'Pending Approval' | 'Approved' | 'Disapproved' | 'Completed';
+
+export interface TravelOrder {
+  id: string; // e.g. TO-2026-001
+  toTrackingNumber: string;
+  employeeId: string;
+  employeeNumber: string;
+  employeeName: string;
+  officeName: string;
+  position: string;
+  destination: string;
+  departureDate: string;
+  returnDate: string;
+  purpose: string;
+  transportationType: 'Official Vehicle' | 'Commercial Air' | 'Ferry / RoRo' | 'Public Bus / Van' | 'Private Vehicle';
+  perDiemEstimated: number;
+  appropriationCode: string;
+  status: TravelOrderStatus;
+  recommendingApprovalBy: string; // Department Head
+  approvedBy: string; // Municipal Mayor / HRMO Head
+  createdAt: string;
+  approvedAt?: string;
+}
+
+export type PassSlipStatus = 'Pending' | 'Approved' | 'Disapproved' | 'Returned';
+export type PassSlipType = 'Official Business (OB)' | 'Personal Undertaking';
+
+export interface PassSlip {
+  id: string; // e.g. PS-2026-001
+  employeeId: string;
+  employeeNumber: string;
+  employeeName: string;
+  officeName: string;
+  position: string;
+  date: string;
+  slipType: PassSlipType;
+  destination: string;
+  timeOut: string;
+  expectedTimeIn: string;
+  actualTimeIn?: string;
+  purpose: string;
+  authorizingOfficer: string;
+  status: PassSlipStatus;
+  createdAt: string;
+}
+
+export interface TrainingRecord {
+  id: string; // e.g. TR-2026-001
+  title: string;
+  category: 'Leadership & Management' | 'Technical & Functional' | 'Supervisory' | 'Values & CSC Ethics' | 'Disaster Preparedness & Safety' | 'General Public Service';
+  provider: string; // e.g. CSC Regional Office IV-B, DILG, DAP
+  venue: string;
+  startDate: string;
+  endDate: string;
+  numberOfHours: number;
+  targetParticipants: EmploymentClassification[];
+  enrolledEmployeeIds: string[];
+  enrolledEmployeesCount: number;
+  budgetAllocated?: number;
+  status: 'Scheduled' | 'In Progress' | 'Completed' | 'Cancelled';
+  createdAt: string;
+}
+
+export interface PerformanceRating {
+  id: string; // e.g. IPCR-2026-01-EMP001
+  employeeId: string;
+  employeeNumber: string;
+  employeeName: string;
+  officeName: string;
+  position: string;
+  classification: EmploymentClassification;
+  ratingPeriod: string; // e.g. "January - June 2026 (1st Semester)"
+  periodYear: number;
+  periodSemester: '1st Semester' | '2nd Semester' | 'Annual';
+  numericalRating: number; // e.g. 4.85
+  adjectivalRating: 'Outstanding' | 'Very Satisfactory' | 'Satisfactory' | 'Unsatisfactory' | 'Poor';
+  coreFunctionsRating: number;
+  supportFunctionsRating: number;
+  spmsStatus: 'Draft' | 'Submitted for Review' | 'Verified by PMT' | 'Approved & Official';
+  evaluatedBy: string;
+  approvedBy: string;
+  evaluatedAt: string;
+  remarks?: string;
+}
+
+export interface OvertimeRecord {
+  id: string; // e.g. OT-2026-001
+  employeeId: string;
+  employeeNumber: string;
+  employeeName: string;
+  officeName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  hoursRendered: number;
+  purpose: string;
+  compensationType: 'Overtime Pay' | 'Compensatory Time-Off (CTO)';
+  rateMultiplier: number; // e.g. 1.25 or 1.50
+  status: 'Pending' | 'Approved' | 'Disapproved';
+  approvedBy?: string;
+  createdAt: string;
+}
+
+export interface SystemBroadcast {
+  id: string; // e.g. BC-2026-001
+  title: string;
+  message: string;
+  targetAudience: 'All Employees' | 'Permanent Personnel Only' | 'Casual & Job Order' | 'Department Heads & Supervisors';
+  priority: 'Normal' | 'Urgent' | 'CSC Memorandum' | 'Executive Order';
+  issuedBy: string;
+  expiresAt?: string;
+  createdAt: string;
+  readCount: number;
+}

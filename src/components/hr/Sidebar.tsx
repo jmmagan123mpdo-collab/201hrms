@@ -3,55 +3,41 @@ import { useAuth } from '../../context/AuthContext.tsx';
 import {
   LayoutDashboard,
   Users,
-  UserSquare2,
   FolderLock,
-  FileCheck2,
-  FileText,
-  FileInput,
   FileClock,
-  HeartHandshake,
-  Navigation,
-  CreditCard,
-  Building2,
-  History,
-  Settings,
   ShieldCheck,
+  CreditCard,
+  History,
+  Navigation,
+  ClipboardList,
+  FileText,
   Award,
   TrendingUp,
+  Building2,
   FileSpreadsheet,
-  Wallet,
+  Bell,
   Sparkles,
-  ClipboardList,
   X
 } from 'lucide-react';
 
 export type HRTab = 
   | 'dashboard'
   | 'masterlist'
-  | 'profiles'
   | '201_files'
-  | 'requests'
-  | 'verification'
-  | 'migration'
   | 'leave'
-  | 'wellness'
+  | 'saln'
+  | 'payroll'
+  | 'overtime'
   | 'travel_orders'
   | 'pass_slips'
-  | 'coe'
-  | 'other_requests'
-  | 'overtime'
-  | 'payroll'
-  | 'payslips'
+  | 'requests'
   | 'training'
   | 'performance'
-  | 'reports_employees'
-  | 'reports_201_compliance'
-  | 'saln'
-  | 'reports_transactions'
-  | 'users'
   | 'offices'
+  | 'reports'
+  | 'users'
+  | 'notifications'
   | 'audit_logs'
-  | 'settings'
   | 'developer_control';
 
 interface SidebarProps {
@@ -60,6 +46,7 @@ interface SidebarProps {
   pendingRequestsCount?: number;
   pendingLeavesCount?: number;
   pendingWellnessCount?: number;
+  unreadNotificationsCount?: number;
   isOpenMobile?: boolean;
   onCloseMobile?: () => void;
 }
@@ -70,13 +57,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   pendingRequestsCount = 0,
   pendingLeavesCount = 0,
   pendingWellnessCount = 0,
+  unreadNotificationsCount = 0,
   isOpenMobile = false,
   onCloseMobile
 }) => {
   const { currentUser } = useAuth();
   const isDeveloper = currentUser?.role === 'developer';
   const isHRAdmin = currentUser?.role === 'hr_admin' || isDeveloper;
-  const isPayroll = currentUser?.role === 'payroll';
 
   const handleSelect = (tab: HRTab) => {
     onSelectTab(tab);
@@ -85,19 +72,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const NavItem = ({ tab, label, icon: Icon, badge }: { tab: HRTab; label: string; icon: any; badge?: number }) => {
+  const NavItem = ({ 
+    tab, 
+    number, 
+    label, 
+    icon: Icon, 
+    badge 
+  }: { 
+    tab: HRTab; 
+    number: number; 
+    label: string; 
+    icon: any; 
+    badge?: number 
+  }) => {
     const isActive = activeTab === tab;
     return (
       <button
         type="button"
         onClick={() => handleSelect(tab)}
-        className={`w-full min-h-[44px] flex items-center justify-between px-3 py-2.5 text-xs rounded-xl font-medium transition-all cursor-pointer ${
+        className={`w-full min-h-[42px] flex items-center justify-between px-3 py-2 text-xs rounded-xl font-medium transition-all cursor-pointer ${
           isActive
             ? 'bg-white/20 text-white font-bold shadow-xs'
             : 'text-blue-100 hover:bg-white/10 hover:text-white'
         }`}
       >
         <div className="flex items-center space-x-2.5 min-w-0">
+          <span className="text-[10px] font-mono text-blue-300 w-4 shrink-0 text-right">{number}.</span>
           <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-blue-200'}`} />
           <span className="truncate">{label}</span>
         </div>
@@ -111,70 +111,44 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const SectionHeader = ({ title }: { title: string }) => (
-    <div className="px-3 pt-4 pb-1 text-[10px] font-bold text-blue-200/80 uppercase tracking-wider">
+    <div className="px-3 pt-3 pb-1 text-[10px] font-bold text-blue-200/80 uppercase tracking-wider">
       {title}
     </div>
   );
 
+  const totalLeaveBadge = pendingLeavesCount + pendingWellnessCount;
+
   const sidebarContent = (
     <>
-      <div className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-8rem)] scrollbar-thin scrollbar-thumb-white/20">
+      <div className="p-3 space-y-0.5 overflow-y-auto max-h-[calc(100vh-8rem)] scrollbar-thin scrollbar-thumb-white/20">
         
-        {/* OVERVIEW */}
-        <SectionHeader title="OVERVIEW" />
-        <NavItem tab="dashboard" label="Dashboard" icon={LayoutDashboard} />
+        {/* CORE RECORDS */}
+        <SectionHeader title="CORE MODULES" />
+        <NavItem tab="dashboard" number={1} label="Dashboard" icon={LayoutDashboard} />
+        <NavItem tab="masterlist" number={2} label="Employee Masterlist" icon={Users} />
+        <NavItem tab="201_files" number={3} label="201 Files" icon={FolderLock} />
+        <NavItem tab="leave" number={4} label="Leave Management" icon={FileClock} badge={totalLeaveBadge} />
+        <NavItem tab="saln" number={5} label="SALN Management" icon={ShieldCheck} />
+        <NavItem tab="payroll" number={6} label="Payroll and Payslips" icon={CreditCard} />
 
-        {/* EMPLOYEE RECORDS */}
-        <SectionHeader title="EMPLOYEE RECORDS" />
-        <NavItem tab="masterlist" label="Employee Masterlist" icon={Users} />
-        <NavItem tab="201_files" label="201 Files" icon={FolderLock} />
+        {/* OPERATIONS & REQUESTS */}
+        <SectionHeader title="OPERATIONS & REQUESTS" />
+        <NavItem tab="overtime" number={7} label="Overtime" icon={History} />
+        <NavItem tab="travel_orders" number={8} label="Travel Orders" icon={Navigation} />
+        <NavItem tab="pass_slips" number={9} label="Pass Slips" icon={ClipboardList} />
+        <NavItem tab="requests" number={10} label="Document Requests" icon={FileText} badge={pendingRequestsCount} />
+        <NavItem tab="training" number={11} label="Training & Dev" icon={Award} />
+        <NavItem tab="performance" number={12} label="Performance (IPCR)" icon={TrendingUp} />
 
-        {/* DOCUMENT MANAGEMENT */}
-        <SectionHeader title="DOCUMENT MANAGEMENT" />
-        <NavItem tab="requests" label="Document Requests" icon={FileText} badge={pendingRequestsCount} />
-        <NavItem tab="verification" label="Document Verification" icon={FileCheck2} />
-        <NavItem tab="migration" label="Migration Center" icon={FileInput} />
-
-        {/* HR TRANSACTIONS */}
-        <SectionHeader title="HR TRANSACTIONS" />
-        <NavItem tab="leave" label="Leave Management" icon={FileClock} badge={pendingLeavesCount} />
-        <NavItem tab="travel_orders" label="Travel Orders" icon={Navigation} />
-        <NavItem tab="pass_slips" label="Pass Slips" icon={ClipboardList} />
-        <NavItem tab="coe" label="Certificate of Employment" icon={Award} />
-        <NavItem tab="other_requests" label="Other HR Requests" icon={FileText} />
-
-        {/* HR OPERATIONS */}
-        <SectionHeader title="HR OPERATIONS" />
-        <NavItem tab="overtime" label="Overtime" icon={History} />
-        <NavItem tab="payroll" label="Payroll" icon={Wallet} />
-        <NavItem tab="payslips" label="Payslips" icon={CreditCard} />
-        <NavItem tab="training" label="Training & Development" icon={Award} />
-        <NavItem tab="performance" label="Performance Management" icon={TrendingUp} />
-
-        {/* REPORTS */}
-        <SectionHeader title="REPORTS" />
-        <NavItem tab="reports_employees" label="Employee Reports" icon={FileSpreadsheet} />
-        <NavItem tab="reports_201_compliance" label="201 Files Compliance" icon={FolderLock} />
-        <NavItem tab="saln" label="SALN Monitoring" icon={ShieldCheck} />
-        <NavItem tab="reports_transactions" label="HR Transaction Reports" icon={FileText} />
-
-        {/* ADMINISTRATION */}
-        <SectionHeader title="ADMINISTRATION" />
-        {isHRAdmin && <NavItem tab="users" label="User Management" icon={Users} />}
-        <NavItem tab="offices" label="Offices" icon={Building2} />
-        {isHRAdmin && <NavItem tab="audit_logs" label="Audit Logs" icon={History} />}
-        {isHRAdmin && <NavItem tab="settings" label="Settings" icon={Settings} />}
-
-        {/* DEVELOPER SYSTEM CONTROL CENTER (Developer Exclusive) */}
-        {isDeveloper && (
-          <>
-            <SectionHeader title="DEVELOPER SPECIAL" />
-            <NavItem 
-              tab="developer_control" 
-              label="System Control Center" 
-              icon={Sparkles} 
-            />
-          </>
+        {/* REGISTRIES & SYSTEM */}
+        <SectionHeader title="REGISTRIES & REPORTS" />
+        <NavItem tab="offices" number={13} label="Office Directory" icon={Building2} />
+        <NavItem tab="reports" number={14} label="Reports" icon={FileSpreadsheet} />
+        {isHRAdmin && <NavItem tab="users" number={15} label="User Management" icon={Users} />}
+        <NavItem tab="notifications" number={16} label="Notifications" icon={Bell} badge={unreadNotificationsCount} />
+        {isHRAdmin && <NavItem tab="audit_logs" number={17} label="Audit Logs" icon={History} />}
+        {(isHRAdmin || isDeveloper) && (
+          <NavItem tab="developer_control" number={18} label="Developer Control" icon={Sparkles} />
         )}
 
       </div>
@@ -182,31 +156,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Footer Info */}
       <div className="p-3 border-t border-white/10 bg-black/10 text-[11px] text-blue-200">
         <div className="font-semibold text-white">LGU San Jose HRMIS</div>
-        <div className="text-[10px] text-blue-300">Municipal Hall, Occidental Mindoro</div>
+        <div className="text-[10px] text-blue-300">18 Master Modules • Occidental Mindoro</div>
       </div>
     </>
   );
 
   return (
     <>
-      {/* 1. Desktop Sidebar (hidden on mobile, visible on md and up) */}
+      {/* 1. Desktop Sidebar */}
       <aside className="hidden md:flex w-64 bg-[#173B67] text-white shrink-0 min-h-[calc(100vh-4rem)] flex-col justify-between border-r border-[#122e50]">
         {sidebarContent}
       </aside>
 
-      {/* 2. Mobile Drawer & Backdrop (only on mobile screens) */}
+      {/* 2. Mobile Drawer */}
       {isOpenMobile && (
         <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
           <div 
             onClick={onCloseMobile}
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
             aria-hidden="true"
           />
 
-          {/* Drawer Panel */}
           <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-[#173B67] text-white shadow-2xl flex flex-col justify-between z-50 animate-in slide-in-from-left duration-250">
-            {/* Mobile Drawer Top Banner */}
             <div className="p-4 bg-[#122e50] border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
                 <img 
@@ -216,7 +187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 />
                 <div>
                   <h3 className="font-bold text-sm text-white">SJHR201 Portal</h3>
-                  <span className="text-[10px] text-blue-200">HR Navigation Menu</span>
+                  <span className="text-[10px] text-blue-200">18 Dedicated HR Menus</span>
                 </div>
               </div>
               <button
@@ -229,7 +200,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             </div>
 
-            {/* Modules List */}
             <div className="flex-1 overflow-y-auto">
               {sidebarContent}
             </div>

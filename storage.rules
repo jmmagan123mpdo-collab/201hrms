@@ -1,0 +1,23 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function userData() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+    function isHR() {
+      return signedIn() && userData().role in ['hr_admin', 'hr_staff', 'developer'];
+    }
+    match /employee-profile/{employeeId}/{fileName} {
+      allow read: if signedIn() && (isHR() || userData().employeeId == employeeId);
+      allow create, update: if signedIn()
+        && (isHR() || userData().employeeId == employeeId)
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      allow delete: if signedIn() && (isHR() || userData().employeeId == employeeId);
+    }
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

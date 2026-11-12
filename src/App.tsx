@@ -7,7 +7,6 @@ import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import { DataProvider, useData } from './context/DataContext.tsx';
 import { Header } from './components/common/Header.tsx';
-import PWAInstallPrompt from './components/common/PWAInstallPrompt.tsx';
 import { LandingPage } from './components/landing/LandingPage.tsx';
 import { Sidebar, HRTab } from './components/hr/Sidebar.tsx';
 import { HRDashboard } from './components/hr/HRDashboard.tsx';
@@ -18,18 +17,27 @@ import { DocumentRequestsView } from './components/hr/DocumentRequestsView.tsx';
 import { LeaveWellnessManager } from './components/hr/LeaveWellnessManager.tsx';
 import { OfficeDirectory } from './components/hr/OfficeDirectory.tsx';
 import { SALNManager } from './components/hr/SALNManager.tsx';
-import { MigrationCenter } from './components/hr/MigrationCenter.tsx';
 import { DeveloperCenter } from './components/hr/DeveloperCenter.tsx';
 import { AddEmployeeModal } from './components/hr/AddEmployeeModal.tsx';
 import { CreateRequestModal } from './components/hr/CreateRequestModal.tsx';
 import { ScannerModal } from './components/hr/ScannerModal.tsx';
+import { PayrollManager } from './components/hr/PayrollManager.tsx';
+import { TravelOrdersManager } from './components/hr/TravelOrdersManager.tsx';
+import { PassSlipsManager } from './components/hr/PassSlipsManager.tsx';
+import { TrainingManager } from './components/hr/TrainingManager.tsx';
+import { PerformanceManager } from './components/hr/PerformanceManager.tsx';
+import { ReportsManager } from './components/hr/ReportsManager.tsx';
+import { UsersManager } from './components/hr/UsersManager.tsx';
+import { NotificationsManager } from './components/hr/NotificationsManager.tsx';
+import { OvertimeManager } from './components/hr/OvertimeManager.tsx';
+import { AuditLogsManager } from './components/hr/AuditLogsManager.tsx';
 import { ESSDashboard } from './components/ess/ESSDashboard.tsx';
 import { Employee, DocumentCategory } from './types/index.ts';
 import { LayoutDashboard, Users, FolderLock, FileText, Menu } from 'lucide-react';
 
 const MainApp: React.FC = () => {
   const { activePortal, setActivePortal, currentUser } = useAuth();
-  const { requests, essServiceRequests, leaveApplications, wellnessApplications } = useData();
+  const { employees, requests, essServiceRequests, leaveApplications, wellnessApplications } = useData();
 
   // HR Navigation State
   const [activeHRTab, setActiveHRTab] = useState<HRTab>('dashboard');
@@ -41,6 +49,7 @@ const MainApp: React.FC = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
 
   const [documentManagerEmp, setDocumentManagerEmp] = useState<Employee | undefined>(undefined);
+  const [masterlistSearchQuery, setMasterlistSearchQuery] = useState<string>('');
 
   // Scanner Modal
   const [showScanner, setShowScanner] = useState(false);
@@ -80,6 +89,16 @@ const MainApp: React.FC = () => {
     setShowCreateRequest(true);
   };
 
+  const handleNavigateToMasterlist = (emp?: Employee) => {
+    if (emp) {
+      setSelectedProfileEmployee(emp);
+      setMasterlistSearchQuery(emp.lastName);
+    } else {
+      setMasterlistSearchQuery('');
+    }
+    setActiveHRTab('masterlist');
+  };
+
   // 1. If at Landing Page
   if (activePortal === 'landing' || !currentUser) {
     return <LandingPage />;
@@ -89,7 +108,11 @@ const MainApp: React.FC = () => {
   if (activePortal === 'ess') {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-        <Header />
+        <Header 
+          onSelectEmployeeProfile={handleOpenProfile}
+          onSelectEmployee201={handleOpen201Files}
+          onNavigateToMasterlist={handleNavigateToMasterlist}
+        />
         <main className="flex-1">
           <ESSDashboard onOpenScanner={handleOpenScanner} />
         </main>
@@ -116,6 +139,9 @@ const MainApp: React.FC = () => {
       <Header 
         onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
         isMobileMenuOpen={isMobileMenuOpen}
+        onSelectEmployeeProfile={handleOpenProfile}
+        onSelectEmployee201={handleOpen201Files}
+        onNavigateToMasterlist={handleNavigateToMasterlist}
       />
 
       <div className="flex-1 flex overflow-hidden relative">
@@ -150,10 +176,11 @@ const MainApp: React.FC = () => {
                 onOpenProfile={handleOpenProfile}
                 onOpen201Files={handleOpen201Files}
                 onOpenAddModal={() => setShowAddEmployee(true)}
+                initialSearchTerm={masterlistSearchQuery}
               />
             )}
 
-            {(activeHRTab === '201_files' || activeHRTab === 'verification' || activeHRTab === 'reports_201_compliance') && (
+            {activeHRTab === '201_files' && (
               <DocumentManager
                 initialEmployee={documentManagerEmp}
                 onOpenScanner={handleOpenScanner}
@@ -168,7 +195,7 @@ const MainApp: React.FC = () => {
               />
             )}
 
-            {(activeHRTab === 'leave' || activeHRTab === 'wellness') && (
+            {activeHRTab === 'leave' && (
               <LeaveWellnessManager />
             )}
 
@@ -180,60 +207,48 @@ const MainApp: React.FC = () => {
               <OfficeDirectory />
             )}
 
-            {activeHRTab === 'migration' && (
-              <MigrationCenter />
-            )}
-
             {activeHRTab === 'developer_control' && (
               <DeveloperCenter />
             )}
 
-            {/* Fallback for informational/report submodules */}
-            {(activeHRTab === 'reports_employees' || 
-              activeHRTab === 'reports_transactions' || 
-              activeHRTab === 'travel_orders' || 
-              activeHRTab === 'pass_slips' || 
-              activeHRTab === 'coe' || 
-              activeHRTab === 'other_requests' || 
-              activeHRTab === 'overtime' || 
-              activeHRTab === 'payroll' || 
-              activeHRTab === 'payslips' || 
-              activeHRTab === 'training' || 
-              activeHRTab === 'performance' ||
-              activeHRTab === 'users' ||
-              activeHRTab === 'audit_logs' ||
-              activeHRTab === 'settings') && (
-              <div className="space-y-4">
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900 tracking-tight capitalize">
-                      {activeHRTab.replace('_', ' ')}
-                    </h2>
-                    <p className="text-xs text-slate-500">
-                      Standard operational records and CSC-compliant registry
-                    </p>
-                  </div>
-                </div>
+            {activeHRTab === 'payroll' && (
+              <PayrollManager employees={employees} />
+            )}
 
-                <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 text-[#173B67] flex items-center justify-center mx-auto font-bold text-sm">
-                    HR
-                  </div>
-                  <h3 className="font-bold text-sm text-slate-900 capitalize">
-                    {activeHRTab.replace('_', ' ')} Registry
-                  </h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    Operating records for this module are active and linked to the municipal employee masterlist and audit history.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setActiveHRTab('masterlist')}
-                    className="px-4 py-2 bg-[#173B67] text-white font-bold rounded-xl text-xs hover:bg-[#122e50] cursor-pointer"
-                  >
-                    View Active Personnel Records
-                  </button>
-                </div>
-              </div>
+            {activeHRTab === 'travel_orders' && (
+              <TravelOrdersManager employees={employees} />
+            )}
+
+            {activeHRTab === 'pass_slips' && (
+              <PassSlipsManager employees={employees} />
+            )}
+
+            {activeHRTab === 'training' && (
+              <TrainingManager employees={employees} />
+            )}
+
+            {activeHRTab === 'performance' && (
+              <PerformanceManager employees={employees} />
+            )}
+
+            {activeHRTab === 'reports' && (
+              <ReportsManager employees={employees} />
+            )}
+
+            {activeHRTab === 'users' && (
+              <UsersManager employees={employees} />
+            )}
+
+            {activeHRTab === 'notifications' && (
+              <NotificationsManager />
+            )}
+
+            {activeHRTab === 'overtime' && (
+              <OvertimeManager employees={employees} />
+            )}
+
+            {activeHRTab === 'audit_logs' && (
+              <AuditLogsManager />
             )}
 
           </div>
@@ -341,7 +356,6 @@ export default function App() {
     <DataProvider>
       <AuthProvider>
         <MainApp />
-        <PWAInstallPrompt />
       </AuthProvider>
     </DataProvider>
   );

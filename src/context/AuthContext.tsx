@@ -17,6 +17,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const LOCAL_STORAGE_USER_KEY = 'sjhr201_auth_user';
 const LOCAL_STORAGE_ACCOUNTS_KEY = 'sjhr201_accounts';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -25,9 +26,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return saved ? JSON.parse(saved) : INITIAL_ACCOUNTS;
   });
 
-  // Always start signed out. Every visit and refresh begins at the public landing page.
-  // User sessions are intentionally not restored from localStorage.
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const [activePortal, setActivePortal] = useState<'landing' | 'hr' | 'ess'>('landing');
 
@@ -36,8 +38,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem(LOCAL_STORAGE_ACCOUNTS_KEY, JSON.stringify(accounts));
   }, [accounts]);
 
-  // Do not persist or automatically restore authenticated users.
-  // Successful login handlers explicitly select the appropriate portal.
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(currentUser));
+      if (currentUser.role === 'employee') {
+        setActivePortal('ess');
+      } else {
+        setActivePortal('hr');
+      }
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+    }
+  }, [currentUser]);
 
   // Find linked employee record if any
   const currentEmployee = currentUser?.employeeId 

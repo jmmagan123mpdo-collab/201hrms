@@ -25,21 +25,29 @@ interface EmployeeMasterlistProps {
   onOpenProfile: (emp: Employee) => void;
   onOpen201Files: (emp: Employee) => void;
   onOpenAddModal: () => void;
+  initialSearchTerm?: string;
 }
 
 export const EmployeeMasterlist: React.FC<EmployeeMasterlistProps> = ({
   onOpenProfile,
   onOpen201Files,
-  onOpenAddModal
+  onOpenAddModal,
+  initialSearchTerm = ''
 }) => {
   const { employees, offices, archiveEmployee } = useData();
   const { hasPermission } = useAuth();
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [selectedOffice, setSelectedOffice] = useState<string>('all');
   const [selectedClassification, setSelectedClassification] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
+
+  React.useEffect(() => {
+    if (initialSearchTerm) {
+      setSearchTerm(initialSearchTerm);
+    }
+  }, [initialSearchTerm]);
 
   // Filter logic
   const filteredEmployees = employees.filter(emp => {
@@ -231,8 +239,8 @@ export const EmployeeMasterlist: React.FC<EmployeeMasterlistProps> = ({
               {/* Card Header: Avatar & Main Identifiers */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-[#173B67] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
-                    {emp.firstName.charAt(0)}{emp.lastName.charAt(0)}
+                  <div className="w-10 h-10 rounded-full bg-[#173B67] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs overflow-hidden">
+                    {emp.profilePictureUrl ? <img src={emp.profilePictureUrl} alt={`${emp.firstName} ${emp.lastName}`} className="w-full h-full object-cover" /> : `${emp.firstName.charAt(0)}${emp.lastName.charAt(0)}`}
                   </div>
                   <div>
                     <h3 className="font-bold text-sm text-slate-900 leading-tight">
@@ -331,8 +339,13 @@ export const EmployeeMasterlist: React.FC<EmployeeMasterlistProps> = ({
 
                     {/* Employee Name */}
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900">
-                        {emp.lastName}, {emp.firstName} {emp.middleName ? `${emp.middleName.charAt(0)}.` : ''} {emp.suffix || ''}
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-[10px] font-bold text-slate-600 shrink-0">
+                          {emp.profilePictureUrl ? <img src={emp.profilePictureUrl} alt="" className="w-full h-full object-cover" /> : `${emp.firstName.charAt(0)}${emp.lastName.charAt(0)}`}
+                        </div>
+                        <div className="font-bold text-slate-900">
+                          {emp.lastName}, {emp.firstName} {emp.middleName ? `${emp.middleName.charAt(0)}.` : ''} {emp.suffix || ''}
+                        </div>
                       </div>
                       <span className="text-[11px] text-slate-500 font-mono block">
                         {emp.email}
