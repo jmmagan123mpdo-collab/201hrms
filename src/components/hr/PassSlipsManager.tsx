@@ -34,7 +34,7 @@ export const PassSlipsManager: React.FC<PassSlipsManagerProps> = ({ employees })
   const [timeOut, setTimeOut] = useState('09:00 AM');
   const [expectedTimeIn, setExpectedTimeIn] = useState('11:30 AM');
   const [purpose, setPurpose] = useState('');
-  const [authorizingOfficer, setAuthorizingOfficer] = useState('Atty. Maria Elena Castillo, MHRMO Head');
+  const [authorizingOfficer, setAuthorizingOfficer] = useState('');
 
   // Filtered
   const filteredSlips = useMemo(() => {

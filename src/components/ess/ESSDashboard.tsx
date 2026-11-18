@@ -88,7 +88,7 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
   const [wellnessDuration, setWellnessDuration] = useState('1 Working Day');
 
   // Filter items for current logged-in employee
-  const employeeId = currentUser?.employeeId || currentEmployee?.id || 'EMP-2022-001';
+  const employeeId = currentUser?.employeeId || currentEmployee?.id || '';
   const employeeName = currentUser?.displayName || 'Municipal Employee';
 
   const myDocuments = documents.filter(d => d.employeeId === employeeId && d.privacy === 'employee_accessible');

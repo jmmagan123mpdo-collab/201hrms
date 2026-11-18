@@ -8,8 +8,6 @@ import {
   CheckCircle2, 
   Clock, 
   FileText, 
-  ChevronDown, 
-  Sparkles, 
   Menu, 
   X,
   Search,
@@ -36,11 +34,10 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectEmployee201,
   onNavigateToMasterlist
 }) => {
-  const { currentUser, currentEmployee, logout, quickSwitchRole, activePortal, setActivePortal } = useAuth();
+  const { currentUser, currentEmployee, logout, activePortal, setActivePortal } = useAuth();
   const { employees, documents, notifications, markNotificationRead, markAllNotificationsRead, isFirebaseConnected } = useData();
   
   const [showNotifDrawer, setShowNotifDrawer] = useState(false);
-  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
 
   // Global Search Bar State
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,7 +94,7 @@ export const Header: React.FC<HeaderProps> = ({
   // Context-aware notifications based on active portal & employee profile
   const relevantNotifs = notifications.filter(n => {
     if (activePortal === 'ess' || currentUser?.role === 'employee') {
-      const empId = currentUser?.employeeId || currentEmployee?.id || 'EMP-2022-001';
+      const empId = currentUser?.employeeId || currentEmployee?.id || '';
       if (n.recipientEmployeeId && n.recipientEmployeeId === empId) return true;
       if (n.recipientRole === 'employee' || n.recipientRole === 'all') return true;
       return false;
@@ -607,69 +604,6 @@ export const Header: React.FC<HeaderProps> = ({
                 <Search className="w-5 h-5" />
               </button>
             )}
-
-            {/* Demo Role Switcher Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
-                className="min-h-[44px] px-2.5 py-1.5 flex items-center space-x-1 text-xs font-medium rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors cursor-pointer"
-                title="Switch test account role"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span className="hidden sm:inline">Role Switcher</span>
-                <ChevronDown className="w-3 h-3 text-slate-500" />
-              </button>
-
-              {showRoleSwitcher && (
-                <div className="fixed sm:absolute inset-x-2 sm:inset-x-auto right-auto sm:right-0 top-14 sm:top-auto sm:mt-2 w-[calc(100vw-1rem)] sm:w-56 bg-white rounded-2xl sm:rounded-xl shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95">
-                  <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 flex items-center justify-between">
-                    <span>Quick Role Test</span>
-                    <button 
-                      onClick={() => setShowRoleSwitcher(false)}
-                      className="sm:hidden text-slate-400 hover:text-slate-600 p-1"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <button
-                    onClick={() => { quickSwitchRole('developer'); setShowRoleSwitcher(false); }}
-                    className="w-full text-left px-3 py-2.5 text-xs flex items-center justify-between hover:bg-slate-50 text-purple-900 cursor-pointer min-h-[44px]"
-                  >
-                    <span>Developer</span>
-                    <span className="text-[10px] bg-purple-100 px-1.5 py-0.5 rounded text-purple-700 font-semibold">dev_sanjose</span>
-                  </button>
-                  <button
-                    onClick={() => { quickSwitchRole('hr_admin'); setShowRoleSwitcher(false); }}
-                    className="w-full text-left px-3 py-2.5 text-xs flex items-center justify-between hover:bg-slate-50 text-blue-900 cursor-pointer min-h-[44px]"
-                  >
-                    <span>HR Administrator</span>
-                    <span className="text-[10px] bg-blue-100 px-1.5 py-0.5 rounded text-blue-700 font-semibold">hr_admin</span>
-                  </button>
-                  <button
-                    onClick={() => { quickSwitchRole('hr_staff'); setShowRoleSwitcher(false); }}
-                    className="w-full text-left px-3 py-2.5 text-xs flex items-center justify-between hover:bg-slate-50 text-sky-900 cursor-pointer min-h-[44px]"
-                  >
-                    <span>HR Staff (Encoder)</span>
-                    <span className="text-[10px] bg-sky-100 px-1.5 py-0.5 rounded text-sky-700 font-semibold">hr_staff</span>
-                  </button>
-                  <button
-                    onClick={() => { quickSwitchRole('payroll'); setShowRoleSwitcher(false); }}
-                    className="w-full text-left px-3 py-2.5 text-xs flex items-center justify-between hover:bg-slate-50 text-emerald-900 cursor-pointer min-h-[44px]"
-                  >
-                    <span>Payroll Personnel</span>
-                    <span className="text-[10px] bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-700 font-semibold">payroll_officer</span>
-                  </button>
-                  <button
-                    onClick={() => { quickSwitchRole('employee'); setShowRoleSwitcher(false); }}
-                    className="w-full text-left px-3 py-2.5 text-xs flex items-center justify-between hover:bg-slate-50 text-amber-900 border-t border-slate-100 cursor-pointer min-h-[44px]"
-                  >
-                    <span>Employee (ESS)</span>
-                    <span className="text-[10px] bg-amber-100 px-1.5 py-0.5 rounded text-amber-700 font-semibold">msantos</span>
-                  </button>
-                </div>
-              )}
-            </div>
 
             {/* Notifications Button */}
             <div className="relative">

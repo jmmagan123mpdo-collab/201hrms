@@ -49,7 +49,7 @@ const LOCAL_STORAGE_ACCOUNTS_KEY = 'sjhr201_accounts';
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [accounts, setAccounts] = useState<UserAccount[]>(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_ACCOUNTS_KEY);
-    return saved ? JSON.parse(saved) : INITIAL_ACCOUNTS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
@@ -109,28 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: 'This HR account has been deactivated. Please contact the HR Administrator.' };
     }
 
-    const validPasswords: Record<string, string> = {
-      'dev_sanjose': 'developer2026!',
-      'hr_admin': 'admin2026!',
-      'hr_staff': 'staff2026!',
-      'payroll_officer': 'payroll2026!'
-    };
-
-    if (password !== 'admin123' && validPasswords[account.username] && password !== validPasswords[account.username]) {
-      return { success: false, error: 'Incorrect password. Please verify your credentials or use the default access.' };
-    }
-
-    const updatedAccount = {
-      ...account,
-      lastLogin: new Date().toISOString()
-    };
-
-    if (rememberMe) {
-      localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(updatedAccount));
-    }
-    setCurrentUser(updatedAccount);
-    setActivePortal('hr');
-    return { success: true };
+    return { success: false, error: 'No password-based account authentication is configured. Create and enable an account through the approved authentication setup.' };
   };
 
   const loginESS = async (identifier: string, password: string, rememberMe = true): Promise<{ success: boolean; error?: string }> => {
@@ -152,21 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: 'This ESS account is currently inactive. Please contact HR.' };
     }
 
-    if (password !== 'employee123' && password !== 'employee2026!' && password.length < 4) {
-      return { success: false, error: 'Invalid password. (Default demo password is: employee2026!)' };
-    }
-
-    const updatedAccount = {
-      ...account,
-      lastLogin: new Date().toISOString()
-    };
-
-    if (rememberMe) {
-      localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(updatedAccount));
-    }
-    setCurrentUser(updatedAccount);
-    setActivePortal('ess');
-    return { success: true };
+    return { success: false, error: 'ESS password authentication is not configured. Please complete account provisioning first.' };
   };
 
   const loginWithGoogle = async (portal: 'hr' | 'ess'): Promise<{ success: boolean; error?: string }> => {
@@ -197,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         handleFirestoreError(err, OperationType.GET, userDocPath);
       }
 
-      const isBootstrappedAdmin = fbEmail === 'jmmagan123mpdo@gmail.com' && fbUser.emailVerified;
+      const isBootstrappedAdmin = false;
       const matchedEmployee = INITIAL_EMPLOYEES.find(e => e.email.toLowerCase() === fbEmail);
       const existingAccount = accounts.find(a => a.email.toLowerCase() === fbEmail);
 
@@ -244,7 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           return {
             success: false,
-            error: `Google account (${fbEmail}) is not authorized for HR Management. Use jmmagan123mpdo@gmail.com or sign in with HR credentials first.`
+            error: `Google account (${fbEmail}) is not authorized for HR Management. Ask the system administrator to create and authorize your HR account first.`
           };
         }
       } else {
@@ -384,17 +349,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const quickSwitchRole = (role: UserRole) => {
-    const targetAccount = accounts.find(a => a.role === role);
-    if (targetAccount) {
-      setCurrentUser(targetAccount);
-      if (role === 'employee') {
-        setActivePortal('ess');
-      } else {
-        setActivePortal('hr');
-      }
-    }
-  };
+  const quickSwitchRole = (_role: UserRole) => { /* Role switching is disabled outside authenticated account login. */ };
 
   const hasPermission = (permission: string): boolean => {
     if (!currentUser) return false;

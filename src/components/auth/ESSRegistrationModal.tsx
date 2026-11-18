@@ -89,11 +89,6 @@ export const ESSRegistrationModal: React.FC<ESSRegistrationModalProps> = ({ isOp
     }
   };
 
-  const handleTestEmailFill = (testEmail: string) => {
-    setEmail(testEmail);
-    setErrorMessage('');
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
       <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-lg w-full border border-orange-100 overflow-hidden max-h-[94vh] flex flex-col">
@@ -206,30 +201,6 @@ export const ESSRegistrationModal: React.FC<ESSRegistrationModalProps> = ({ isOp
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
-                  {/* Test suggestions */}
-                  <div className="pt-2 border-t border-slate-100">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      Personnel Awaiting ESS Registration:
-                    </span>
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => handleTestEmailFill('clarisse.villanueva@sanjose.gov.ph')}
-                        className="w-full text-left p-1.5 rounded-lg border border-slate-200 text-[11px] hover:bg-slate-50 flex items-center justify-between"
-                      >
-                        <span className="font-medium text-slate-800">Clarisse Villanueva (Casual - MCR)</span>
-                        <span className="text-orange-600 font-mono text-[10px]">clarisse.villanueva@...</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleTestEmailFill('mark.tolentino@sanjose.gov.ph')}
-                        className="w-full text-left p-1.5 rounded-lg border border-slate-200 text-[11px] hover:bg-slate-50 flex items-center justify-between"
-                      >
-                        <span className="font-medium text-slate-800">Mark Anthony Tolentino (JO - MDRRMO)</span>
-                        <span className="text-orange-600 font-mono text-[10px]">mark.tolentino@...</span>
-                      </button>
-                    </div>
-                  </div>
                 </form>
               ) : (
                 <form onSubmit={handleFinalize} className="space-y-4">

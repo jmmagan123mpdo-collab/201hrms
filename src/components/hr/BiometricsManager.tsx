@@ -154,7 +154,7 @@ export const BiometricsManager: React.FC = () => {
   // Open New Entry Modal
   const handleOpenNewEntry = () => {
     setSelectedRecordToEdit(null);
-    setAdjustEmpId(employees[0]?.id || 'EMP-2022-001');
+    setAdjustEmpId(employees[0]?.id || '');
     setAdjustDate(selectedDate);
     setAdjustAmIn('07:55 AM');
     setAdjustAmOut('12:00 PM');

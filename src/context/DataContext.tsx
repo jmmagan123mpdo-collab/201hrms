@@ -164,6 +164,11 @@ function parseTimestamp(val: unknown): string {
 }
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // One-time clean start: remove legacy demo/sample records stored by earlier builds.
+  if (!localStorage.getItem('sjhr201_clean_start_v1')) {
+    Object.keys(localStorage).filter(key => key.startsWith('sjhr201_')).forEach(key => localStorage.removeItem(key));
+    localStorage.setItem('sjhr201_clean_start_v1', 'true');
+  }
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(false);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [firestoreSyncError, setFirestoreSyncError] = useState<string | null>(null);
@@ -171,7 +176,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [employees, setEmployees] = useState<Employee[]>(() => {
     const saved = localStorage.getItem('sjhr201_employees');
-    return saved ? JSON.parse(saved) : INITIAL_EMPLOYEES;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [offices, setOffices] = useState<Office[]>(() => {
@@ -183,231 +188,52 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [documents, setDocuments] = useState<EmployeeDocument[]>(() => {
     const saved = localStorage.getItem('sjhr201_documents');
-    if (saved) return JSON.parse(saved);
-    return [
-      {
-        id: 'doc-001',
-        employeeId: 'EMP-2022-001',
-        categoryId: 'cat-01',
-        documentTypeCode: 'PDS_212',
-        documentName: 'Personal Data Sheet (CS Form 212 Revised 2017)',
-        status: 'verified',
-        privacy: 'employee_accessible',
-        isRequired: true,
-        fileName: 'PDS_MariaSantosReyes_2024.pdf',
-        fileSize: 2450000,
-        uploadedBy: 'Elena Castillo',
-        uploaderRole: 'hr_admin',
-        uploadedAt: '2024-03-10T10:00:00.000Z',
-        verifiedBy: 'Elena Castillo',
-        verifiedAt: '2024-03-10T14:00:00.000Z',
-        version: 1
-      },
-      {
-        id: 'doc-002',
-        employeeId: 'EMP-2022-001',
-        categoryId: 'cat-02',
-        documentTypeCode: 'APPOINTMENT_PAPER',
-        documentName: 'CSC Attested Appointment Paper',
-        status: 'verified',
-        privacy: 'employee_accessible',
-        isRequired: true,
-        fileName: 'CSC_Appointment_HRMO_II_MSReyes.pdf',
-        fileSize: 1820000,
-        uploadedBy: 'Ricardo Manalo',
-        uploaderRole: 'hr_staff',
-        uploadedAt: '2022-04-01T08:00:00.000Z',
-        verifiedBy: 'Elena Castillo',
-        verifiedAt: '2022-04-02T09:00:00.000Z',
-        version: 1
-      },
-      {
-        id: 'doc-003',
-        employeeId: 'EMP-2022-001',
-        categoryId: 'cat-07',
-        documentTypeCode: 'SALN_ANNUAL',
-        documentName: 'Sworn Annual SALN Form (CSC Revised 2015)',
-        status: 'missing_required',
-        privacy: 'hr_restricted',
-        isRequired: true,
-        version: 0
-      },
-      {
-        id: 'doc-004',
-        employeeId: 'EMP-2023-045',
-        categoryId: 'cat-01',
-        documentTypeCode: 'PDS_212',
-        documentName: 'Personal Data Sheet (CS Form 212 Revised 2017)',
-        status: 'verified',
-        privacy: 'employee_accessible',
-        isRequired: true,
-        fileName: 'PDS_Juan_DelaCruz_2025.pdf',
-        fileSize: 3100000,
-        uploadedBy: 'Juan Dela Cruz',
-        uploaderRole: 'employee',
-        uploadedAt: '2025-01-20T11:00:00.000Z',
-        verifiedBy: 'Elena Castillo',
-        verifiedAt: '2025-01-22T10:00:00.000Z',
-        version: 1
-      }
-    ];
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [requests, setRequests] = useState<DocumentRequest[]>(() => {
     const saved = localStorage.getItem('sjhr201_requests');
-    return saved ? JSON.parse(saved) : INITIAL_DOCUMENT_REQUESTS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [essServiceRequests, setEssServiceRequests] = useState<ESSDocumentServiceRequest[]>(() => {
     const saved = localStorage.getItem('sjhr201_ess_service_requests');
-    return saved ? JSON.parse(saved) : INITIAL_ESS_SERVICE_REQUESTS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [leaveApplications, setLeaveApplications] = useState<LeaveApplication[]>(() => {
     const saved = localStorage.getItem('sjhr201_leave_applications');
-    return saved ? JSON.parse(saved) : INITIAL_LEAVE_APPLICATIONS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [wellnessApplications, setWellnessApplications] = useState<WellnessApplication[]>(() => {
     const saved = localStorage.getItem('sjhr201_wellness_applications');
-    return saved ? JSON.parse(saved) : INITIAL_WELLNESS_APPLICATIONS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [salnRecords, setSalnRecords] = useState<SALNRecord[]>(() => {
     const saved = localStorage.getItem('sjhr201_saln_records');
-    return saved ? JSON.parse(saved) : INITIAL_SALN_RECORDS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [biometricRecords, setBiometricRecords] = useState<BiometricRecord[]>(() => {
     const saved = localStorage.getItem('sjhr201_biometric_records');
-    return saved ? JSON.parse(saved) : INITIAL_BIOMETRIC_RECORDS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [terminals, setTerminals] = useState<BiometricTerminal[]>(() => {
     const saved = localStorage.getItem('sjhr201_terminals');
-    return saved ? JSON.parse(saved) : INITIAL_TERMINALS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [notifications, setNotifications] = useState<SystemNotification[]>(() => {
-    const defaultNotifs: SystemNotification[] = [
-      {
-        id: 'notif-ps-2026-02',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: 'February 2026 Payslip Available',
-        message: 'Your official monthly electronic payslip for February 2026 is now available. Net Take-Home Pay: ₱32,699.00 disbursed via Landbank ATM Payroll.',
-        type: 'payslip_available',
-        targetTab: 'payslips',
-        actionLabel: 'View Payslip',
-        isRead: false,
-        createdAt: '2026-02-10T16:30:00.000Z'
-      },
-      {
-        id: 'notif-leave-001',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: 'Leave Approved: CSC Form 6 (Vacation)',
-        message: 'Your 3-day Vacation Leave application (Feb 18-20, 2026) has been approved by Municipal Mayor Rey P. Ladaga and recorded by MHRMO.',
-        type: 'leave_update',
-        targetTab: 'leave',
-        actionLabel: 'View Approval',
-        isRead: false,
-        createdAt: '2026-02-09T11:15:00.000Z'
-      },
-      {
-        id: 'notif-doc-saln-01',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: 'New Document Request: Annual SALN',
-        message: 'MHRMO Compliance: The HR Office has requested your Annual SALN Form as of Dec 31, 2025. Due date: April 15, 2026.',
-        type: 'document_request',
-        targetTab: 'requests',
-        actionLabel: 'Upload SALN',
-        isRead: false,
-        createdAt: '2026-02-08T09:05:00.000Z'
-      },
-      {
-        id: 'notif-coe-001',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: 'COE Service Request Ready',
-        message: 'Your Certificate of Employment (COE) with Compensation is officially sealed by MHRMO and ready for download or municipal pickup.',
-        type: 'ess_request_ready',
-        targetTab: 'requests',
-        actionLabel: 'Download COE',
-        isRead: false,
-        createdAt: '2026-02-07T14:20:00.000Z'
-      },
-      {
-        id: 'notif-doc-ver-01',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: '201 Document Verified: Appointment Paper',
-        message: 'Your CSC Attested Permanent Appointment (HRMO II) has been verified and permanently cataloged under Category B in your 201 Digital File.',
-        type: 'verification',
-        targetTab: '201_files',
-        actionLabel: 'View 201 Files',
-        isRead: true,
-        createdAt: '2026-02-03T10:00:00.000Z'
-      },
-      {
-        id: 'notif-ps-2026-01',
-        recipientRole: 'employee',
-        recipientEmployeeId: 'EMP-2022-001',
-        title: 'January 2026 Payslip Available',
-        message: 'Your January 2026 computerized payroll extract is archived and accessible in your Payslip History.',
-        type: 'payslip_available',
-        targetTab: 'payslips',
-        actionLabel: 'View Payslip',
-        isRead: true,
-        createdAt: '2026-01-31T17:00:00.000Z'
-      },
-      {
-        id: 'notif-hr-01',
-        recipientRole: 'hr_staff',
-        title: 'Document Submitted for Review',
-        message: 'Juan Dela Cruz submitted IPCR Form (2nd Semester 2025) for verification.',
-        type: 'submission',
-        targetPath: 'verification',
-        isRead: false,
-        createdAt: '2026-02-05T14:23:00.000Z'
-      }
-    ];
-
     const saved = localStorage.getItem('sjhr201_notifications');
-    if (saved) {
-      try {
-        const parsed: SystemNotification[] = JSON.parse(saved);
-        const hasPayslipNotif = parsed.some(n => n.type === 'payslip_available');
-        if (!hasPayslipNotif) {
-          const merged = [...defaultNotifs.filter(d => !parsed.some(p => p.id === d.id)), ...parsed];
-          localStorage.setItem('sjhr201_notifications', JSON.stringify(merged));
-          return merged;
-        }
-        return parsed;
-      } catch {
-        return defaultNotifs;
-      }
-    }
-    return defaultNotifs;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
     const saved = localStorage.getItem('sjhr201_audit_logs');
-    if (saved) return JSON.parse(saved);
-    return [
-      {
-        id: 'log-1',
-        actorUid: 'usr-developer',
-        actorName: 'Lead System Developer',
-        actorRole: 'Developer',
-        action: 'System Initialization',
-        targetEntity: 'System',
-        targetId: 'SJHR201',
-        details: 'Initial system boot and municipal database schema loaded for San Jose, Occidental Mindoro.',
-        timestamp: '2026-02-10T08:00:00.000Z'
-      }
-    ];
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>(() => {

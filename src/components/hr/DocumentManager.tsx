@@ -57,7 +57,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   const { currentUser, hasPermission } = useAuth();
 
   const [selectedEmpId, setSelectedEmpId] = useState<string>(
-    initialEmployee?.id || employees[0]?.id || 'EMP-2022-001'
+    initialEmployee?.id || employees[0]?.id || ''
   );
 
   const [searchQuery, setSearchQuery] = useState('');

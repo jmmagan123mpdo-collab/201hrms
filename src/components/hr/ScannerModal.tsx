@@ -46,7 +46,7 @@ export const ScannerModal: React.FC<ScannerModalProps> = ({
   const { employees, categories, uploadDocument } = useData();
 
   // Selected targets
-  const [selectedEmpId, setSelectedEmpId] = useState(targetEmployeeId || currentUser?.employeeId || 'EMP-2022-001');
+  const [selectedEmpId, setSelectedEmpId] = useState(targetEmployeeId || currentUser?.employeeId || '');
   const [selectedCatId, setSelectedCatId] = useState(targetCategoryId || 'cat-01');
   const [docName, setDocName] = useState(targetDocName || 'Personal Data Sheet (CS Form 212)');
   const [docTypeCode, setDocTypeCode] = useState(targetDocType || 'PDS_212');

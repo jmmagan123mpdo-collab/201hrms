@@ -13,63 +13,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-const INITIAL_AUDIT_LOGS: AuditLog[] = [
-  {
-    id: 'LOG-001',
-    actorUid: 'user-001',
-    actorName: 'Atty. Maria Elena Castillo',
-    actorRole: 'hr_admin',
-    action: 'VERIFIED_DOCUMENT',
-    targetEntity: 'EmployeeDocument',
-    targetId: 'DOC-PSA-EMP001',
-    details: 'Verified PSA Birth Certificate for Juan Dela Cruz (EMP-2024-002) as authentic.',
-    timestamp: '2026-02-12T08:15:22.000Z'
-  },
-  {
-    id: 'LOG-002',
-    actorUid: 'user-003',
-    actorName: 'Leonardo Fernandez, CPA',
-    actorRole: 'payroll',
-    action: 'GENERATED_CUSTOM_PAYSLIP',
-    targetEntity: 'PayslipRecord',
-    targetId: 'PS-2026-02-EMP002',
-    details: 'Generated February 2026 Digital Payslip for Planning Officer II Juan Dela Cruz.',
-    timestamp: '2026-02-12T08:02:11.000Z'
-  },
-  {
-    id: 'LOG-003',
-    actorUid: 'user-002',
-    actorName: 'Grace Balmes',
-    actorRole: 'hr_staff',
-    action: 'APPROVED_TRAVEL_ORDER',
-    targetEntity: 'TravelOrder',
-    targetId: 'TO-2026-001',
-    details: 'Recorded Mayor approval for Official Travel Order TO-LGU-SJ-2026-0012 to CSC Regional IV-B.',
-    timestamp: '2026-02-11T16:30:00.000Z'
-  },
-  {
-    id: 'LOG-004',
-    actorUid: 'user-001',
-    actorName: 'Atty. Maria Elena Castillo',
-    actorRole: 'hr_admin',
-    action: 'ISSUED_PASS_SLIP',
-    targetEntity: 'PassSlip',
-    targetId: 'PS-2026-001',
-    details: 'Authorized Official Business Pass Slip for Juan Dela Cruz to LTO San Jose.',
-    timestamp: '2026-02-11T09:15:00.000Z'
-  },
-  {
-    id: 'LOG-005',
-    actorUid: 'user-001',
-    actorName: 'Atty. Maria Elena Castillo',
-    actorRole: 'hr_admin',
-    action: 'SYSTEM_BROADCAST_DISPATCHED',
-    targetEntity: 'SystemBroadcast',
-    targetId: 'BC-2026-001',
-    details: 'Dispatched mandatory SALN submission advisory to all LGU personnel.',
-    timestamp: '2026-02-01T08:00:00.000Z'
-  }
-];
+const INITIAL_AUDIT_LOGS: AuditLog[] = [];
 
 export const AuditLogsManager: React.FC = () => {
   const [logs, setLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);

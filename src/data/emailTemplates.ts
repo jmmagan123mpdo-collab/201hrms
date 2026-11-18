@@ -86,7 +86,7 @@ export function createEmployeeApprovedEmail(
       remarks: leave.mayorRemarks || 'Approved'
     },
     hrCertification: {
-      certifiedBy: leave.hrFinalOfficer || 'Atty. Maria Elena Castillo, MHRMO Head',
+      certifiedBy: leave.hrFinalOfficer || '',
       certifiedAt: leave.hrFinalDate || new Date().toISOString(),
       remarks: leave.hrFinalRemarks || 'Verified and deducted from leave credits ledger'
     }

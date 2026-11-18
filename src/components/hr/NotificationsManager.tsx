@@ -29,7 +29,7 @@ export const NotificationsManager: React.FC = () => {
   const [message, setMessage] = useState('');
   const [targetAudience, setTargetAudience] = useState<SystemBroadcast['targetAudience']>('All Employees');
   const [priority, setPriority] = useState<SystemBroadcast['priority']>('Normal');
-  const [issuedBy, setIssuedBy] = useState('Atty. Maria Elena Castillo, MHRMO Head');
+  const [issuedBy, setIssuedBy] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
 
   const filteredBroadcasts = useMemo(() => {

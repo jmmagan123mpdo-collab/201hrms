@@ -268,7 +268,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
             <div className="space-y-1">
               <span className="text-[10px] text-slate-500 uppercase block">Certified Correct:</span>
               <div className="pt-6 font-bold text-slate-900 text-xs uppercase underline">
-                GRACE BALMES
+                
               </div>
               <div className="text-[10px] text-slate-600 font-medium">
                 Municipal Payroll Officer • Office of the Municipal Accountant

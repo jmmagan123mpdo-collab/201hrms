@@ -104,21 +104,8 @@ export const MigrationCenter: React.FC = () => {
     if (!file) return;
 
     setOcrFileName(file.name);
-    // Intelligent OCR extraction simulation
-    setTimeout(() => {
-      setOcrExtractedData({
-        suggestedEmployeeName: 'Maria Santos Reyes',
-        suggestedDocType: 'Personal Data Sheet (CS Form 212)',
-        confidence: 94,
-        extractedFields: {
-          'CS Form': 'CS Form 212 Revised 2017',
-          'Name on Document': 'REYES, MARIA SANTOS',
-          'Date of Birth': 'May 18, 1990',
-          'TIN Found': '245-891-002-000',
-          'Notary Status': 'Notarized by Atty. V. Sanchez'
-        }
-      });
-    }, 600);
+    setOcrExtractedData(null);
+    setImportSummary('OCR sample data has been removed. Upload a document to use the configured OCR processing workflow.');
   };
 
   const handleConfirmOcrSave = async () => {

@@ -739,7 +739,7 @@ export const LeaveWellnessManager: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-right text-[10px] text-slate-500 pt-1">
-                  Certified by: <strong>Atty. Maria Elena Castillo</strong>, Municipal HRMO Head
+                  Certified by: <strong></strong>, Municipal HRMO Head
                 </div>
               </div>
 

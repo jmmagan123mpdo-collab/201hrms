@@ -17,7 +17,7 @@ export const MyLeaveCreditsView: React.FC = () => {
   const { currentEmployee, currentUser } = useAuth();
   const { leaveApplications } = useData();
 
-  const employeeId = currentUser?.employeeId || currentEmployee?.id || 'EMP-2024-002';
+  const employeeId = currentUser?.employeeId || currentEmployee?.id || '';
   const isPermanent = currentEmployee?.classification === 'Permanent';
 
   // Filter employee leaves

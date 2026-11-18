@@ -32,7 +32,7 @@ export const ESSNotificationBell: React.FC<ESSNotificationBellProps> = ({
   const [filter, setFilter] = useState<'all' | 'unread' | 'payslip' | 'approvals'>('all');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const employeeId = currentUser?.employeeId || currentEmployee?.id || 'EMP-2022-001';
+  const employeeId = currentUser?.employeeId || currentEmployee?.id || '';
 
   // Filter notifications relevant to current employee (ESS)
   const employeeNotifs = notifications.filter(n => {

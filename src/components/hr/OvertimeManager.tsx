@@ -34,7 +34,7 @@ export const OvertimeManager: React.FC<OvertimeManagerProps> = ({ employees }) =
   const [purpose, setPurpose] = useState('');
   const [compensationType, setCompensationType] = useState<OvertimeRecord['compensationType']>('Overtime Pay');
   const [rateMultiplier, setRateMultiplier] = useState<number>(1.25);
-  const [approvedBy, setApprovedBy] = useState('Atty. Maria Elena Castillo, MHRMO Head');
+  const [approvedBy, setApprovedBy] = useState('');
 
   const filteredRecords = useMemo(() => {
     return records.filter(r => {

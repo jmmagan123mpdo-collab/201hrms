@@ -70,8 +70,8 @@ export const CustomPayslipModal: React.FC<CustomPayslipModalProps> = ({
   // Bank & Certification
   const [bankName, setBankName] = useState<string>('Land Bank of the Philippines – San Jose Branch');
   const [accountNumberMasked, setAccountNumberMasked] = useState<string>('0421-****-88');
-  const [certifiedBy, setCertifiedBy] = useState<string>('Grace Balmes, Municipal Payroll Officer');
-  const [notedBy, setNotedBy] = useState<string>('Atty. Maria Elena Castillo, MHRMO Head');
+  const [certifiedBy, setCertifiedBy] = useState<string>('');
+  const [notedBy, setNotedBy] = useState<string>('');
 
   // New item inputs
   const [newEarningName, setNewEarningName] = useState('');
