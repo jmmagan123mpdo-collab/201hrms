@@ -9,8 +9,8 @@ interface HRLoginModalProps {
 
 export const HRLoginModal: React.FC<HRLoginModalProps> = ({ isOpen, onClose }) => {
   const { loginHR, loginWithGoogle } = useAuth();
-  const [username, setUsername] = useState('hr_admin');
-  const [password, setPassword] = useState('admin2026!');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,11 +56,6 @@ export const HRLoginModal: React.FC<HRLoginModalProps> = ({ isOpen, onClose }) =
     }
   };
 
-  const handleQuickFill = (u: string, p: string) => {
-    setUsername(u);
-    setPassword(p);
-    setErrorMessage('');
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
@@ -216,47 +211,6 @@ export const HRLoginModal: React.FC<HRLoginModalProps> = ({ isOpen, onClose }) =
                 </svg>
                 <span>{isGoogleLoading ? 'Connecting Google Account...' : 'Continue with Google (Firestore Sync)'}</span>
               </button>
-
-              {/* Quick Preset Buttons for Testing */}
-              <div className="pt-3 border-t border-slate-100">
-                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                  Test Administrative Logins:
-                </p>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('hr_admin', 'admin2026!')}
-                    className="p-1.5 text-left border rounded-lg text-[11px] hover:bg-slate-50 border-slate-200 transition-colors"
-                  >
-                    <span className="font-semibold text-blue-900 block">HR Administrator</span>
-                    <span className="text-slate-400 text-[10px]">hr_admin</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('dev_sanjose', 'developer2026!')}
-                    className="p-1.5 text-left border rounded-lg text-[11px] hover:bg-slate-50 border-slate-200 transition-colors"
-                  >
-                    <span className="font-semibold text-purple-900 block">System Developer</span>
-                    <span className="text-slate-400 text-[10px]">dev_sanjose</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('hr_staff', 'staff2026!')}
-                    className="p-1.5 text-left border rounded-lg text-[11px] hover:bg-slate-50 border-slate-200 transition-colors"
-                  >
-                    <span className="font-semibold text-sky-900 block">HR Staff (Encoder)</span>
-                    <span className="text-slate-400 text-[10px]">hr_staff</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('payroll_officer', 'payroll2026!')}
-                    className="p-1.5 text-left border rounded-lg text-[11px] hover:bg-slate-50 border-slate-200 transition-colors"
-                  >
-                    <span className="font-semibold text-emerald-900 block">Payroll Officer</span>
-                    <span className="text-slate-400 text-[10px]">payroll_officer</span>
-                  </button>
-                </div>
-              </div>
             </form>
           )}
         </div>

@@ -10,8 +10,8 @@ interface ESSLoginModalProps {
 
 export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, onOpenRegister }) => {
   const { loginESS, loginWithGoogle } = useAuth();
-  const [identifier, setIdentifier] = useState('maria.santos@sanjose.gov.ph');
-  const [password, setPassword] = useState('employee2026!');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,11 +57,6 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
     }
   };
 
-  const handleQuickFill = (id: string, pass: string) => {
-    setIdentifier(id);
-    setPassword(pass);
-    setErrorMessage('');
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
@@ -235,31 +230,6 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
                   <UserPlus className="w-4 h-4" />
                   <span>Register an ESS Account</span>
                 </button>
-              </div>
-
-              {/* Demo Quick Fills */}
-              <div className="pt-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  Test ESS Accounts:
-                </span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('maria.santos@sanjose.gov.ph', 'employee2026!')}
-                    className="p-1.5 text-left border rounded-lg text-[10px] hover:bg-slate-50 border-slate-200"
-                  >
-                    <span className="font-semibold text-slate-800 block">Maria Santos Reyes</span>
-                    <span className="text-slate-500">maria.santos@...</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('juan.delacruz@sanjose.gov.ph', 'employee2026!')}
-                    className="p-1.5 text-left border rounded-lg text-[10px] hover:bg-slate-50 border-slate-200"
-                  >
-                    <span className="font-semibold text-slate-800 block">Juan Dela Cruz</span>
-                    <span className="text-slate-500">juan.delacruz@...</span>
-                  </button>
-                </div>
               </div>
             </form>
           )}
