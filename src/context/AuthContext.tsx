@@ -1,14 +1,40 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserAccount, UserRole, Employee } from '../types/index.ts';
+import { UserAccount, UserRole, Employee, HRStaffPermission } from '../types/index.ts';
 import { INITIAL_ACCOUNTS, INITIAL_EMPLOYEES } from '../data/initialData.ts';
+import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase.ts';
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  User as FirebaseUser
+} from 'firebase/auth';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+
+const ALL_HR_PERMISSIONS: HRStaffPermission[] = [
+  'view_employees',
+  'add_employees',
+  'edit_employees',
+  'upload_documents',
+  'scan_documents',
+  'verify_documents',
+  'request_documents',
+  'process_leave',
+  'process_wellness',
+  'generate_reports',
+  'manage_offices'
+];
 
 interface AuthContextType {
   currentUser: UserAccount | null;
   currentEmployee: Employee | null;
+  firebaseUser: FirebaseUser | null;
+  isAuthReady: boolean;
   activePortal: 'landing' | 'hr' | 'ess';
   setActivePortal: (portal: 'landing' | 'hr' | 'ess') => void;
   loginHR: (username: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
   loginESS: (identifier: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: (portal: 'hr' | 'ess') => Promise<{ success: boolean; error?: string }>;
   registerESS: (email: string, username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   quickSwitchRole: (role: UserRole) => void;
@@ -31,7 +57,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return saved ? JSON.parse(saved) : null;
   });
 
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
   const [activePortal, setActivePortal] = useState<'landing' | 'hr' | 'ess'>('landing');
+
+  // Subscribe to Firebase Authentication state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setFirebaseUser(user);
+      setIsAuthReady(true);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Sync state to local storage
   useEffect(() => {
@@ -52,15 +89,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [currentUser]);
 
   // Find linked employee record if any
-  const currentEmployee = currentUser?.employeeId 
-    ? INITIAL_EMPLOYEES.find(e => e.id === currentUser.employeeId) || null 
+  const currentEmployee = currentUser?.employeeId
+    ? INITIAL_EMPLOYEES.find(e => e.id === currentUser.employeeId) || null
     : null;
 
   const loginHR = async (username: string, password: string, rememberMe = true): Promise<{ success: boolean; error?: string }> => {
     const cleanUser = username.trim().toLowerCase();
-    
-    // Developer, HR Admin, HR Staff, or Payroll
-    const account = accounts.find(a => 
+
+    const account = accounts.find(a =>
       (a.username.toLowerCase() === cleanUser || a.email.toLowerCase() === cleanUser) &&
       a.role !== 'employee'
     );
@@ -73,9 +109,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: 'This HR account has been deactivated. Please contact the HR Administrator.' };
     }
 
-    // Passwords check
-    // In production, password verification is done via auth service / hashed comparisons.
-    // For demo/system access we accept either default passwords or developer bypass
     const validPasswords: Record<string, string> = {
       'dev_sanjose': 'developer2026!',
       'hr_admin': 'admin2026!',
@@ -92,6 +125,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       lastLogin: new Date().toISOString()
     };
 
+    if (rememberMe) {
+      localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(updatedAccount));
+    }
     setCurrentUser(updatedAccount);
     setActivePortal('hr');
     return { success: true };
@@ -99,17 +135,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginESS = async (identifier: string, password: string, rememberMe = true): Promise<{ success: boolean; error?: string }> => {
     const cleanId = identifier.trim().toLowerCase();
-    
-    // Look for employee account matching either registered email or username
-    const account = accounts.find(a => 
-      a.role === 'employee' && 
+
+    const account = accounts.find(a =>
+      a.role === 'employee' &&
       (a.email.toLowerCase() === cleanId || a.username.toLowerCase() === cleanId)
     );
 
     if (!account) {
-      return { 
-        success: false, 
-        error: 'No ESS account found with this email or username. Please ensure your email is recorded by HR and register an ESS account.' 
+      return {
+        success: false,
+        error: 'No ESS account found with this email or username. Please ensure your email is recorded by HR and register an ESS account.'
       };
     }
 
@@ -117,14 +152,176 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: 'This ESS account is currently inactive. Please contact HR.' };
     }
 
-    // Default password or demo password
     if (password !== 'employee123' && password !== 'employee2026!' && password.length < 4) {
       return { success: false, error: 'Invalid password. (Default demo password is: employee2026!)' };
     }
 
-    setCurrentUser(account);
+    const updatedAccount = {
+      ...account,
+      lastLogin: new Date().toISOString()
+    };
+
+    if (rememberMe) {
+      localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(updatedAccount));
+    }
+    setCurrentUser(updatedAccount);
     setActivePortal('ess');
     return { success: true };
+  };
+
+  const loginWithGoogle = async (portal: 'hr' | 'ess'): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const credential = await signInWithPopup(auth, provider);
+      const fbUser = credential.user;
+      const fbEmail = (fbUser.email || '').trim().toLowerCase();
+
+      if (!fbEmail) {
+        return { success: false, error: 'Google account did not return a verified email address.' };
+      }
+
+      // Sync or read /users/{uid} record in Cloud Firestore
+      let remoteRole: UserRole | null = null;
+      let remoteEmployeeId: string | undefined;
+      const userDocPath = `users/${fbUser.uid}`;
+
+      try {
+        const snap = await getDoc(doc(db, 'users', fbUser.uid));
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data?.role) remoteRole = data.role as UserRole;
+          if (data?.employeeId) remoteEmployeeId = String(data.employeeId);
+        }
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, userDocPath);
+      }
+
+      const isBootstrappedAdmin = fbEmail === 'jmmagan123mpdo@gmail.com' && fbUser.emailVerified;
+      const matchedEmployee = INITIAL_EMPLOYEES.find(e => e.email.toLowerCase() === fbEmail);
+      const existingAccount = accounts.find(a => a.email.toLowerCase() === fbEmail);
+
+      let resolvedUser: UserAccount | null = null;
+
+      if (portal === 'hr') {
+        if (isBootstrappedAdmin) {
+          resolvedUser = {
+            uid: fbUser.uid,
+            username: fbEmail.split('@')[0],
+            email: fbEmail,
+            displayName: fbUser.displayName || 'Lead System Developer & Supervisor',
+            role: 'developer',
+            permissions: ALL_HR_PERMISSIONS,
+            isActive: true,
+            lastLogin: new Date().toISOString(),
+            createdAt: new Date().toISOString()
+          };
+        } else if (existingAccount && existingAccount.role !== 'employee') {
+          resolvedUser = {
+            ...existingAccount,
+            uid: fbUser.uid,
+            displayName: fbUser.displayName || existingAccount.displayName,
+            lastLogin: new Date().toISOString()
+          };
+        } else if (remoteRole && remoteRole !== 'employee') {
+          resolvedUser = {
+            uid: fbUser.uid,
+            username: fbEmail.split('@')[0],
+            email: fbEmail,
+            displayName: fbUser.displayName || fbEmail,
+            role: remoteRole,
+            permissions: remoteRole === 'hr_admin' || remoteRole === 'developer' ? ALL_HR_PERMISSIONS : ['view_employees', 'process_leave', 'process_wellness'],
+            isActive: true,
+            lastLogin: new Date().toISOString(),
+            createdAt: new Date().toISOString()
+          };
+        } else if (currentUser && currentUser.role !== 'employee') {
+          // Linking Firebase Google session onto an already authenticated HR portal session
+          resolvedUser = {
+            ...currentUser,
+            lastLogin: new Date().toISOString()
+          };
+        } else {
+          return {
+            success: false,
+            error: `Google account (${fbEmail}) is not authorized for HR Management. Use jmmagan123mpdo@gmail.com or sign in with HR credentials first.`
+          };
+        }
+      } else {
+        // ESS Portal
+        if (matchedEmployee) {
+          resolvedUser = {
+            uid: fbUser.uid,
+            username: matchedEmployee.essUsername || fbEmail.split('@')[0],
+            email: matchedEmployee.email,
+            displayName: `${matchedEmployee.firstName} ${matchedEmployee.lastName}`,
+            role: 'employee',
+            employeeId: matchedEmployee.id,
+            permissions: [],
+            isActive: true,
+            lastLogin: new Date().toISOString(),
+            createdAt: new Date().toISOString()
+          };
+        } else if (existingAccount && existingAccount.role === 'employee') {
+          resolvedUser = {
+            ...existingAccount,
+            uid: fbUser.uid,
+            lastLogin: new Date().toISOString()
+          };
+        } else if (remoteEmployeeId) {
+          resolvedUser = {
+            uid: fbUser.uid,
+            username: fbEmail.split('@')[0],
+            email: fbEmail,
+            displayName: fbUser.displayName || fbEmail,
+            role: 'employee',
+            employeeId: remoteEmployeeId,
+            permissions: [],
+            isActive: true,
+            lastLogin: new Date().toISOString(),
+            createdAt: new Date().toISOString()
+          };
+        } else if (currentUser && currentUser.role === 'employee') {
+          resolvedUser = {
+            ...currentUser,
+            lastLogin: new Date().toISOString()
+          };
+        } else {
+          return {
+            success: false,
+            error: `Google email (${fbEmail}) is not registered in the LGU Employee Masterlist. Sign in with an ESS account or have HR record this email.`
+          };
+        }
+      }
+
+      // Persist /users/{uid} record in Firestore
+      try {
+        await setDoc(
+          doc(db, 'users', fbUser.uid),
+          {
+            uid: fbUser.uid,
+            email: fbEmail,
+            displayName: fbUser.displayName || resolvedUser.displayName,
+            role: isBootstrappedAdmin ? 'developer' : (remoteRole || resolvedUser.role),
+            ...(resolvedUser.employeeId ? { employeeId: resolvedUser.employeeId } : {}),
+            lastLoginAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, userDocPath);
+      }
+
+      setCurrentUser(resolvedUser);
+      setActivePortal(portal);
+      return { success: true };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Google Sign-In failed.';
+      if (message.includes('popup-closed-by-user')) {
+        return { success: false, error: 'Google Sign-In popup was closed before completing authentication.' };
+      }
+      return { success: false, error: message };
+    }
   };
 
   const registerESS = async (email: string, username: string, password: string): Promise<{ success: boolean; error?: string }> => {
@@ -139,38 +336,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: 'Username must be at least 3 characters long.' };
     }
 
-    // 1. Verify that email exists in employee masterlist and is registered by HR
     const matchedEmployee = INITIAL_EMPLOYEES.find(e => e.email.toLowerCase() === cleanEmail);
     if (!matchedEmployee) {
-      return { 
-        success: false, 
-        error: 'Email address not found in the official HR personnel registry. Please submit your official email address to the HR Office for recording.' 
+      return {
+        success: false,
+        error: 'Email address not found in the official HR personnel registry. Please submit your official email address to the HR Office for recording.'
       };
     }
 
-    // 2. Check if this employee already has an ESS account
     const existingForEmployee = accounts.find(a => a.employeeId === matchedEmployee.id);
     if (existingForEmployee) {
-      return { 
-        success: false, 
-        error: `An ESS account already exists for this personnel record (Username: ${existingForEmployee.username}). Use Forgot Password if needed.` 
+      return {
+        success: false,
+        error: `An ESS account already exists for this personnel record (Username: ${existingForEmployee.username}). Use Forgot Password if needed.`
       };
     }
 
-    // 3. Check if username is already taken
     const usernameTaken = accounts.find(a => a.username.toLowerCase() === cleanUsername);
     if (usernameTaken) {
       return { success: false, error: 'This username is already taken. Please choose another username.' };
     }
 
-    // 4. Create new ESS account linked to the employee's permanent internal ID
     const newAccount: UserAccount = {
       uid: `usr-ess-${Date.now()}`,
       username: cleanUsername,
       email: matchedEmployee.email,
       displayName: `${matchedEmployee.firstName} ${matchedEmployee.lastName}`,
       role: 'employee',
-      employeeId: matchedEmployee.id, // Immutable link
+      employeeId: matchedEmployee.id,
       permissions: [],
       isActive: true,
       createdAt: new Date().toISOString()
@@ -186,6 +379,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setCurrentUser(null);
     setActivePortal('landing');
+    signOut(auth).catch((err) => {
+      console.warn('Firebase signOut warning:', err);
+    });
   };
 
   const quickSwitchRole = (role: UserRole) => {
@@ -214,10 +410,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         currentUser,
         currentEmployee,
+        firebaseUser,
+        isAuthReady,
         activePortal,
         setActivePortal,
         loginHR,
         loginESS,
+        loginWithGoogle,
         registerESS,
         logout,
         quickSwitchRole,

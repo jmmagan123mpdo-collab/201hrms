@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useData } from '../../context/DataContext.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { LeaveApplication, WellnessApplication } from '../../types/index.ts';
+import { EmailLogsPanel } from './EmailLogsPanel.tsx';
 import { 
   FileClock, 
   HeartHandshake, 
@@ -17,13 +18,15 @@ import {
   ShieldCheck,
   Printer,
   Eye,
-  Filter
+  Filter,
+  Mail
 } from 'lucide-react';
 
 export const LeaveWellnessManager: React.FC = () => {
   const { 
     leaveApplications, 
     wellnessApplications, 
+    emailLogs,
     processSupervisorLeave, 
     processMayorLeave, 
     processHRFinalLeave,
@@ -32,7 +35,8 @@ export const LeaveWellnessManager: React.FC = () => {
   } = useData();
 
   const { currentUser } = useAuth();
-  const [activeTab, setActiveTab] = useState<'leave' | 'wellness'>('leave');
+  const [activeTab, setActiveTab] = useState<'leave' | 'wellness' | 'email_logs'>('leave');
+  const [workflowFeedback, setWorkflowFeedback] = useState<string>('');
 
   // Approval state
   const [selectedLeave, setSelectedLeave] = useState<LeaveApplication | null>(null);
@@ -70,11 +74,11 @@ export const LeaveWellnessManager: React.FC = () => {
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex items-center space-x-2 bg-slate-100 p-1 rounded-xl">
+        <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
           <button
             type="button"
             onClick={() => setActiveTab('leave')}
-            className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center space-x-1.5 ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center space-x-1.5 cursor-pointer ${
               activeTab === 'leave' ? 'bg-[#173B67] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -85,15 +89,42 @@ export const LeaveWellnessManager: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('wellness')}
-            className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center space-x-1.5 ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center space-x-1.5 cursor-pointer ${
               activeTab === 'wellness' ? 'bg-[#F28C28] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <HeartHandshake className="w-4 h-4" />
-            <span>Wellness W-01 & W-02 ({pendingWellness.length})</span>
+            <span>Wellness W-01 &amp; W-02 ({pendingWellness.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('email_logs')}
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center space-x-1.5 cursor-pointer ${
+              activeTab === 'email_logs' ? 'bg-[#173B67] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Mail className="w-4 h-4" />
+            <span>Email Log ({emailLogs.length})</span>
           </button>
         </div>
       </div>
+
+      {workflowFeedback && (
+        <div className="p-3 bg-blue-50 border border-blue-200 text-[#173B67] rounded-xl font-semibold flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Mail className="w-4 h-4 shrink-0" />
+            <span>{workflowFeedback}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveTab('email_logs')}
+            className="text-[11px] font-bold underline cursor-pointer shrink-0 ml-3"
+          >
+            View Email Log
+          </button>
+        </div>
+      )}
 
       {/* TAB 1: CSC FORM 6 LEAVE APPLICATIONS */}
       {activeTab === 'leave' && (
@@ -458,6 +489,11 @@ export const LeaveWellnessManager: React.FC = () => {
         </div>
       )}
 
+      {/* TAB 3: TRANSACTIONAL WORKFLOW EMAIL LOG */}
+      {activeTab === 'email_logs' && (
+        <EmailLogsPanel />
+      )}
+
       {/* Leave Approval Modal (Mobile Bottom-Sheet / Desktop Centered) */}
       {selectedLeave && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
@@ -533,14 +569,16 @@ export const LeaveWellnessManager: React.FC = () => {
               <button
                 type="button"
                 onClick={async () => {
+                  const targetId = selectedLeave.id;
                   if (selectedLeave.status === 'pending_supervisor') {
-                    await processSupervisorLeave(selectedLeave.id, 'Disapproved', remarks, approverName);
+                    await processSupervisorLeave(targetId, 'Disapproved', remarks, approverName);
                   } else if (selectedLeave.status === 'pending_mayor') {
-                    await processMayorLeave(selectedLeave.id, 'Disapproved', remarks, approverName);
+                    await processMayorLeave(targetId, 'Disapproved', remarks, approverName);
                   } else {
-                    await processHRFinalLeave(selectedLeave.id, 'Disapproved', remarks, approverName);
+                    await processHRFinalLeave(targetId, 'Disapproved', remarks, approverName);
                   }
                   setSelectedLeave(null);
+                  setWorkflowFeedback(`Leave ${targetId} disapproved and workflow notification logged.`);
                 }}
                 className="min-h-[44px] px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl cursor-pointer"
               >
@@ -549,12 +587,17 @@ export const LeaveWellnessManager: React.FC = () => {
               <button
                 type="button"
                 onClick={async () => {
-                  if (selectedLeave.status === 'pending_supervisor') {
-                    await processSupervisorLeave(selectedLeave.id, 'Approved', remarks, approverName);
-                  } else if (selectedLeave.status === 'pending_mayor') {
-                    await processMayorLeave(selectedLeave.id, 'Approved', remarks, approverName);
+                  const targetId = selectedLeave.id;
+                  const stage = selectedLeave.status;
+                  if (stage === 'pending_supervisor') {
+                    await processSupervisorLeave(targetId, 'Approved', remarks, approverName);
+                    setWorkflowFeedback(`Leave ${targetId} endorsed to Mayor; transactional email logged.`);
+                  } else if (stage === 'pending_mayor') {
+                    await processMayorLeave(targetId, 'Approved', remarks, approverName);
+                    setWorkflowFeedback(`Leave ${targetId} approved by Mayor & routed to HR Final Reviewer; email logged.`);
                   } else {
-                    await processHRFinalLeave(selectedLeave.id, 'Approved', remarks, approverName);
+                    await processHRFinalLeave(targetId, 'Approved', remarks, approverName);
+                    setWorkflowFeedback(`Leave ${targetId} finalized & employee confirmation email logged.`);
                   }
                   setSelectedLeave(null);
                 }}
@@ -787,10 +830,14 @@ export const LeaveWellnessManager: React.FC = () => {
               <button
                 type="button"
                 onClick={async () => {
-                  if (selectedWellness.status === 'pending_supervisor') {
-                    await processSupervisorWellness(selectedWellness.id, remarks, approverName);
+                  const targetId = selectedWellness.id;
+                  const stage = selectedWellness.status;
+                  if (stage === 'pending_supervisor') {
+                    await processSupervisorWellness(targetId, remarks, approverName);
+                    setWorkflowFeedback(`Wellness ${targetId} endorsed to Mayor; transactional email logged.`);
                   } else {
-                    await processHeadWellness(selectedWellness.id, 'Approved', remarks, approverName);
+                    await processHeadWellness(targetId, 'Approved', remarks, approverName);
+                    setWorkflowFeedback(`Wellness ${targetId} approved & confirmation email logged.`);
                   }
                   setSelectedWellness(null);
                 }}

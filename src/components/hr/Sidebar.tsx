@@ -181,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="p-4 bg-[#122e50] border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
                 <img 
-                  src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
+                  src="/assets/aistudio/logo-300x293_45c24a73.png" 
                   alt="San Jose Logo" 
                   className="w-8 h-8 object-contain"
                 />

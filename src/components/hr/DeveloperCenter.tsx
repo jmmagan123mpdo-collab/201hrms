@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext.tsx';
 import { useAuth } from '../../context/AuthContext.tsx';
+import { EmailLogsPanel } from './EmailLogsPanel.tsx';
 import { 
   Sparkles, 
   Settings, 
@@ -17,15 +18,26 @@ import {
   Info,
   CheckCircle2,
   Save,
-  RotateCcw
+  Send,
+  AlertTriangle
 } from 'lucide-react';
 
 export const DeveloperCenter: React.FC = () => {
-  const { settings, updateSettings, auditLogs, isFirebaseConnected } = useData();
+  const {
+    settings,
+    updateSettings,
+    auditLogs,
+    emailLogs,
+    emailServiceHealth,
+    sendTestWorkflowEmail,
+    isFirebaseConnected
+  } = useData();
   const { currentUser } = useAuth();
 
   const [activeSubTab, setActiveSubTab] = useState<number>(1);
   const [saveMessage, setSaveMessage] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Editable settings
   const [systemName, setSystemName] = useState(settings.systemName);
@@ -42,16 +54,42 @@ export const DeveloperCenter: React.FC = () => {
   const [essDocumentRequests, setEssDocumentRequests] = useState(true);
 
   // Workflow Approver Emails Configuration (Section 15)
-  const [supervisorEmail, setSupervisorEmail] = useState('jmmagan123mpdo@gmail.com');
-  const [mayorEmail, setMayorEmail] = useState('juanmig488@gmail.com');
-  const [hrFinalReviewerEmail, setHrFinalReviewerEmail] = useState('admin@sanjose.gov.ph');
+  const [supervisorEmail, setSupervisorEmail] = useState(
+    settings.leaveWorkflowRouting?.supervisorEmail || 'jmmagan123mpdo@gmail.com'
+  );
+  const [mayorEmail, setMayorEmail] = useState(
+    settings.leaveWorkflowRouting?.mayorEmail || 'juanmig488@gmail.com'
+  );
+  const [hrFinalReviewerEmail, setHrFinalReviewerEmail] = useState(
+    settings.leaveWorkflowRouting?.hrFinalReviewerEmail || 'admin@sanjose.gov.ph'
+  );
+  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(
+    settings.leaveWorkflowRouting?.emailNotificationsEnabled ?? true
+  );
+  const [testingRole, setTestingRole] = useState<string | null>(null);
+  const [testEmailFeedback, setTestEmailFeedback] = useState<{ type: 'success' | 'warning' | 'error'; message: string } | null>(null);
+
+  useEffect(() => {
+    setSystemName(settings.systemName);
+    setLguName(settings.lguName);
+    setHeadOfAgency(settings.headOfAgency);
+    setHrmoHead(settings.hrmoHead);
+    setEssEnabled(settings.essSelfRegistrationEnabled);
+    setMaintenanceMode(settings.maintenanceMode);
+    if (settings.leaveWorkflowRouting) {
+      setSupervisorEmail(settings.leaveWorkflowRouting.supervisorEmail);
+      setMayorEmail(settings.leaveWorkflowRouting.mayorEmail);
+      setHrFinalReviewerEmail(settings.leaveWorkflowRouting.hrFinalReviewerEmail);
+      setEmailNotificationsEnabled(settings.leaveWorkflowRouting.emailNotificationsEnabled);
+    }
+  }, [settings]);
 
   const sections = [
     { id: 1, label: '1. General Settings', icon: Settings },
     { id: 2, label: '2. Branding & Colors', icon: Palette },
     { id: 3, label: '3. ESS Configuration', icon: Sliders },
     { id: 4, label: '4. Workflow Engine', icon: GitFork },
-    { id: 5, label: '5. Notifications', icon: Bell },
+    { id: 5, label: '5. Notifications & Email Log', icon: Bell },
     { id: 6, label: '6. Roles & Privileges', icon: ShieldCheck },
     { id: 7, label: '7. Firebase & Storage', icon: Database },
     { id: 8, label: '8. Backup & Recovery', icon: HardDriveDownload },
@@ -61,17 +99,62 @@ export const DeveloperCenter: React.FC = () => {
     { id: 12, label: '12. Version Information', icon: Info }
   ];
 
-  const handleSaveSettings = () => {
-    updateSettings({
-      systemName,
-      lguName,
-      headOfAgency,
-      hrmoHead,
-      essSelfRegistrationEnabled: essEnabled,
-      maintenanceMode
-    });
-    setSaveMessage('System settings published and synchronized to database successfully.');
-    setTimeout(() => setSaveMessage(''), 4000);
+  const handleSaveSettings = async () => {
+    setSaveError('');
+    setSaveMessage('');
+    setIsSaving(true);
+    try {
+      await updateSettings({
+        systemName,
+        lguName,
+        headOfAgency,
+        hrmoHead,
+        essSelfRegistrationEnabled: essEnabled,
+        maintenanceMode,
+        leaveWorkflowRouting: {
+          supervisorEmail: supervisorEmail.trim(),
+          mayorEmail: mayorEmail.trim(),
+          hrFinalReviewerEmail: hrFinalReviewerEmail.trim(),
+          emailNotificationsEnabled
+        }
+      });
+      setSaveMessage('System and leave approver email routing settings published successfully.');
+      setTimeout(() => setSaveMessage(''), 4500);
+    } catch (err: unknown) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to publish settings to Cloud Firestore.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSendTest = async (
+    email: string,
+    role: 'supervisor' | 'mayor' | 'hr_final_reviewer',
+    label: string
+  ) => {
+    setTestingRole(role);
+    setTestEmailFeedback(null);
+    try {
+      const log = await sendTestWorkflowEmail(email, role, label);
+      if (log.status === 'sent') {
+        setTestEmailFeedback({
+          type: 'success',
+          message: `Test email sent to ${email} (${label}) via ${log.provider}. Logged as ${log.id}.`
+        });
+      } else if (log.status === 'unconfigured') {
+        setTestEmailFeedback({
+          type: 'warning',
+          message: `Dispatch logged (${log.id}) for ${email}, but no server SendGrid/Mailgun API key is configured yet.`
+        });
+      } else {
+        setTestEmailFeedback({
+          type: 'error',
+          message: `Dispatch (${log.id}) returned status "${log.status}": ${log.errorMessage || 'Check server logs.'}`
+        });
+      }
+    } finally {
+      setTestingRole(null);
+    }
   };
 
   return (
@@ -99,10 +182,11 @@ export const DeveloperCenter: React.FC = () => {
         <button
           type="button"
           onClick={handleSaveSettings}
-          className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl shadow-md transition-colors flex items-center space-x-1.5 cursor-pointer"
+          disabled={isSaving}
+          className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl shadow-md transition-colors flex items-center space-x-1.5 cursor-pointer disabled:opacity-60"
         >
           <Save className="w-4 h-4" />
-          <span>Publish Changes</span>
+          <span>{isSaving ? 'Publishing...' : 'Publish Changes'}</span>
         </button>
       </div>
 
@@ -110,6 +194,13 @@ export const DeveloperCenter: React.FC = () => {
         <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl font-bold flex items-center space-x-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{saveMessage}</span>
+        </div>
+      )}
+
+      {saveError && (
+        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-bold flex items-center space-x-2">
+          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+          <span>{saveError}</span>
         </div>
       )}
 
@@ -280,24 +371,65 @@ export const DeveloperCenter: React.FC = () => {
               <div className="flex items-center justify-between border-b pb-2">
                 <div>
                   <h3 className="font-bold text-sm text-slate-900">4. Leave Approval Routing & Approver Email Configuration</h3>
-                  <p className="text-xs text-slate-500">Configures the 5-stage CSC Form 6 and Wellness leave approval routing</p>
+                  <p className="text-xs text-slate-500">Configures the 5-stage CSC Form 6 and Wellness leave approval routing &amp; automated transactional emails</p>
                 </div>
-                <span className="text-[10px] bg-blue-100 text-[#173B67] px-2 py-0.5 rounded font-bold">Section 14 & 15 Compliant</span>
+                <span className="text-[10px] bg-blue-100 text-[#173B67] px-2 py-0.5 rounded font-bold">Section 14 &amp; 15 Compliant</span>
               </div>
 
-              {/* Warning Notice for Email Delivery */}
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-start space-x-2">
-                <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <div className="space-y-0.5">
-                  <span className="font-bold">Email Service Configuration Status:</span>
-                  <p className="text-[11px] text-amber-800">
-                    Real-time in-app notifications and approval actions are fully functional. External SMTP / transactional email delivery service credentials must be configured in environment variables prior to live mailbox dispatch.
-                  </p>
+              {/* Live Transactional Email Helper Status + Toggle */}
+              <div
+                className={`p-3.5 border rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                  emailServiceHealth?.configuredProvider && emailServiceHealth.configuredProvider !== 'none'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
+                    : 'bg-amber-50 border-amber-200 text-amber-900'
+                }`}
+              >
+                <div className="flex items-start space-x-2">
+                  <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <span className="font-bold block">
+                      Server Email Helper:{' '}
+                      {emailServiceHealth?.configuredProvider === 'sendgrid'
+                        ? 'SendGrid v3 API Active'
+                        : emailServiceHealth?.configuredProvider === 'mailgun'
+                        ? `Mailgun v3 API (${emailServiceHealth.mailgunDomain})`
+                        : 'Awaiting Server Environment Credentials'}
+                    </span>
+                    <p className="text-[11px] opacity-90">
+                      {emailServiceHealth?.configuredProvider && emailServiceHealth.configuredProvider !== 'none'
+                        ? `Sending workflow alerts from ${emailServiceHealth.fromEmail}. Every dispatch is recorded in Firestore emailLogs.`
+                        : 'Real-time in-app alerts & Firestore Email Logs are active. Configure SENDGRID_API_KEY or MAILGUN_API_KEY + MAILGUN_DOMAIN in server environment variables to deliver live emails.'}
+                    </p>
+                  </div>
                 </div>
+
+                <label className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg border border-slate-200 cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={emailNotificationsEnabled}
+                    onChange={(e) => setEmailNotificationsEnabled(e.target.checked)}
+                    className="w-4 h-4 text-[#173B67] rounded"
+                  />
+                  <span className="font-bold text-[11px] text-slate-800">Auto-Send Emails</span>
+                </label>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3.5 bg-slate-50 border rounded-xl space-y-1.5">
+              {testEmailFeedback && (
+                <div
+                  className={`p-3 rounded-xl border text-xs font-medium ${
+                    testEmailFeedback.type === 'success'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                      : testEmailFeedback.type === 'warning'
+                      ? 'bg-amber-50 border-amber-200 text-amber-900'
+                      : 'bg-rose-50 border-rose-200 text-rose-800'
+                  }`}
+                >
+                  {testEmailFeedback.message}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="p-3.5 bg-slate-50 border rounded-xl space-y-2">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">Stage 2: Immediate Supervisor</span>
                   <label className="font-bold text-slate-800 block text-xs">Supervisor Approver Email</label>
                   <input
@@ -306,10 +438,21 @@ export const DeveloperCenter: React.FC = () => {
                     onChange={(e) => setSupervisorEmail(e.target.value)}
                     className="w-full p-2 border border-slate-300 rounded-lg bg-white font-mono text-xs"
                   />
-                  <span className="text-[10px] text-slate-400 block">Sample recipient: jmmagan123mpdo@gmail.com</span>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[10px] text-slate-400">Default: jmmagan123mpdo@gmail.com</span>
+                    <button
+                      type="button"
+                      onClick={() => handleSendTest(supervisorEmail, 'supervisor', 'Immediate Supervisor')}
+                      disabled={testingRole === 'supervisor'}
+                      className="px-2 py-1 bg-[#173B67] hover:bg-[#122e50] text-white rounded-lg text-[10px] font-bold inline-flex items-center space-x-1 cursor-pointer disabled:opacity-60"
+                    >
+                      <Send className="w-3 h-3" />
+                      <span>{testingRole === 'supervisor' ? 'Testing...' : 'Test'}</span>
+                    </button>
+                  </div>
                 </div>
 
-                <div className="p-3.5 bg-slate-50 border rounded-xl space-y-1.5">
+                <div className="p-3.5 bg-slate-50 border rounded-xl space-y-2">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">Stage 3: Head of Agency</span>
                   <label className="font-bold text-slate-800 block text-xs">Municipal Mayor Approver Email</label>
                   <input
@@ -318,27 +461,68 @@ export const DeveloperCenter: React.FC = () => {
                     onChange={(e) => setMayorEmail(e.target.value)}
                     className="w-full p-2 border border-slate-300 rounded-lg bg-white font-mono text-xs"
                   />
-                  <span className="text-[10px] text-slate-400 block">Sample recipient: juanmig488@gmail.com</span>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[10px] text-slate-400">Default: juanmig488@gmail.com</span>
+                    <button
+                      type="button"
+                      onClick={() => handleSendTest(mayorEmail, 'mayor', 'Municipal Mayor')}
+                      disabled={testingRole === 'mayor'}
+                      className="px-2 py-1 bg-[#173B67] hover:bg-[#122e50] text-white rounded-lg text-[10px] font-bold inline-flex items-center space-x-1 cursor-pointer disabled:opacity-60"
+                    >
+                      <Send className="w-3 h-3" />
+                      <span>{testingRole === 'mayor' ? 'Testing...' : 'Test'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3.5 bg-slate-50 border rounded-xl space-y-2">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Stage 4 &amp; 5: MHRMO Final</span>
+                  <label className="font-bold text-slate-800 block text-xs">HR Final Reviewer Email</label>
+                  <input
+                    type="email"
+                    value={hrFinalReviewerEmail}
+                    onChange={(e) => setHrFinalReviewerEmail(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded-lg bg-white font-mono text-xs"
+                  />
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[10px] text-slate-400">Default: admin@sanjose.gov.ph</span>
+                    <button
+                      type="button"
+                      onClick={() => handleSendTest(hrFinalReviewerEmail, 'hr_final_reviewer', 'HR Final Reviewer')}
+                      disabled={testingRole === 'hr_final_reviewer'}
+                      className="px-2 py-1 bg-[#173B67] hover:bg-[#122e50] text-white rounded-lg text-[10px] font-bold inline-flex items-center space-x-1 cursor-pointer disabled:opacity-60"
+                    >
+                      <Send className="w-3 h-3" />
+                      <span>{testingRole === 'hr_final_reviewer' ? 'Testing...' : 'Test'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <div className="p-3.5 bg-slate-50 border rounded-xl space-y-2 text-xs text-slate-700">
-                <span className="font-bold text-slate-900 block">5-Stage Approval & Leave-Credit Invariant:</span>
+                <span className="font-bold text-slate-900 block">5-Stage Approval &amp; Leave-Credit Invariant:</span>
                 <ol className="list-decimal pl-4 space-y-1 text-[11px]">
-                  <li><strong>Stage 1 (Employee):</strong> Submits CSC Form 6 / W-01 / W-02 through ESS.</li>
-                  <li><strong>Stage 2 (Immediate Supervisor):</strong> Reviews and can Approve, Return, or Disapprove. (No credit deducted).</li>
-                  <li><strong>Stage 3 (Mayor):</strong> Endorses application. (No credit deducted).</li>
+                  <li><strong>Stage 1 (Employee):</strong> Submits CSC Form 6 / W-01 / W-02 through ESS. Emails Immediate Supervisor.</li>
+                  <li><strong>Stage 2 (Immediate Supervisor):</strong> Reviews and can Approve or Disapprove. Endorsement emails Municipal Mayor. (No credit deducted).</li>
+                  <li><strong>Stage 3 (Mayor):</strong> Endorses application. Approval emails HR Final Reviewer. (No credit deducted).</li>
                   <li><strong>Stage 4 (HR Final Review):</strong> Checks completeness, supporting docs, and rules.</li>
-                  <li><strong>Stage 5 (Finalization):</strong> ONLY HR final acceptance triggers the automatic leave-credit deduction and audit log record.</li>
+                  <li><strong>Stage 5 (Finalization):</strong> ONLY HR final acceptance triggers leave-credit deduction, audit log, and employee confirmation email.</li>
                 </ol>
+              </div>
+
+              <div className="pt-2">
+                <h4 className="font-bold text-xs text-slate-900 mb-2">
+                  Recent Transactional Email Dispatches ({emailLogs.length})
+                </h4>
+                <EmailLogsPanel compact />
               </div>
             </div>
           )}
 
-          {/* SECTION 5: NOTIFICATIONS */}
+          {/* SECTION 5: NOTIFICATIONS & EMAIL LOG */}
           {activeSubTab === 5 && (
             <div className="space-y-4">
-              <h3 className="font-bold text-sm text-slate-900 border-b pb-2">5. Notification Dispatch Parameters</h3>
+              <h3 className="font-bold text-sm text-slate-900 border-b pb-2">5. Notification Dispatch Parameters &amp; Firestore Email Log</h3>
               <div className="space-y-2 text-xs">
                 <div className="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
                   <div>
@@ -349,12 +533,18 @@ export const DeveloperCenter: React.FC = () => {
                 </div>
                 <div className="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
                   <div>
-                    <span className="font-bold block">Document Verification Triggers</span>
-                    <span className="text-[11px] text-slate-500">Automatic employee alert when HR verifies or returns 201 file</span>
+                    <span className="font-bold block">Leave Approval Transactional Emails (SendGrid / Mailgun)</span>
+                    <span className="text-[11px] text-slate-500">Automated stage-by-stage emails to Supervisor, Mayor, HR Final Reviewer &amp; Employee</span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px]">Active</span>
+                  <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
+                    emailNotificationsEnabled ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    {emailNotificationsEnabled ? 'Enabled' : 'Paused'}
+                  </span>
                 </div>
               </div>
+
+              <EmailLogsPanel />
             </div>
           )}
 

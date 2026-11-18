@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../../lib/firebase.ts';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { useData } from '../../context/DataContext.tsx';
 import { 
@@ -51,7 +49,6 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
   const { currentUser, currentEmployee } = useAuth();
   const { 
     categories, 
-    employees,
     documents, 
     uploadDocument,
     requests, 
@@ -61,9 +58,7 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
     submitLeaveApplication,
     wellnessApplications, 
     submitWellnessApplication,
-    notifications,
-    updateEmployee,
-    addAuditLog
+    notifications 
   } = useData();
 
   const [activeTab, setActiveTab] = useState<'overview' | '201_files' | 'requests' | 'leave' | 'wellness' | 'payslips'>('overview');
@@ -94,8 +89,7 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
 
   // Filter items for current logged-in employee
   const employeeId = currentUser?.employeeId || currentEmployee?.id || 'EMP-2022-001';
-  const employeeRecord = employees.find(e => e.id === employeeId) || currentEmployee;
-  const employeeName = currentUser?.displayName || (employeeRecord ? `${employeeRecord.firstName} ${employeeRecord.lastName}` : 'Municipal Employee');
+  const employeeName = currentUser?.displayName || 'Municipal Employee';
 
   const myDocuments = documents.filter(d => d.employeeId === employeeId && d.privacy === 'employee_accessible');
   const myRequests = requests.filter(r => r.employeeId === employeeId);
@@ -163,29 +157,6 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
     setWellnessDate('');
   };
 
-  const handleProfilePictureChange = async (file?: File) => {
-    if (!file || !currentEmployee) return;
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      window.alert('Please upload a JPG, PNG, or WEBP image.');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      window.alert('Profile pictures must be 5 MB or smaller.');
-      return;
-    }
-    try {
-      const path = `employee-profile/${currentEmployee.id}/profile-${Date.now()}.${file.type.split('/')[1]}`;
-      const target = storageRef(storage, path);
-      await uploadBytes(target, file, { contentType: file.type });
-      const url = await getDownloadURL(target);
-      await updateEmployee(currentEmployee.id, { profilePictureUrl: url, profilePicturePath: path });
-      addAuditLog('Update Profile Picture', 'Employee', currentEmployee.id, 'Employee updated their ESS profile picture');
-    } catch (error) {
-      console.error('Profile picture upload failed', error);
-      window.alert('The profile picture could not be uploaded. Please check your connection and try again.');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-orange-50/20 font-sans pb-24 md:pb-12">
       <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
@@ -193,12 +164,9 @@ export const ESSDashboard: React.FC<ESSDashboardProps> = ({ onOpenScanner }) => 
         {/* ESS Top Personnel Banner with Orange Theme (#F28C28) */}
         <div className="bg-gradient-to-r from-[#F28C28] to-[#ea580c] rounded-2xl p-4 sm:p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <label className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center text-lg sm:text-xl font-bold shadow-inner shrink-0 overflow-hidden cursor-pointer" title="Change profile picture">
-              {employeeRecord?.profilePictureUrl
-                ? <img src={employeeRecord.profilePictureUrl} alt="Employee profile" className="w-full h-full object-cover" />
-                : employeeName.charAt(0)}
-              <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={e => { void handleProfilePictureChange(e.target.files?.[0]); e.currentTarget.value = ''; }} />
-            </label>
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center text-lg sm:text-xl font-bold shadow-inner shrink-0">
+              {employeeName.charAt(0)}
+            </div>
             <div>
               <div className="text-[10px] sm:text-[11px] font-bold text-orange-100 uppercase tracking-widest flex items-center space-x-1.5">
                 <span>Employee Self-Service (ESS)</span>

@@ -9,12 +9,13 @@ interface ESSLoginModalProps {
 }
 
 export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, onOpenRegister }) => {
-  const { loginESS } = useAuth();
+  const { loginESS, loginWithGoogle } = useAuth();
   const [identifier, setIdentifier] = useState('maria.santos@sanjose.gov.ph');
   const [password, setPassword] = useState('employee2026!');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
@@ -36,6 +37,23 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
       setErrorMessage(err.message || 'An error occurred during ESS sign-in.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setErrorMessage('');
+    setIsGoogleLoading(true);
+    try {
+      const res = await loginWithGoogle('ess');
+      if (!res.success) {
+        setErrorMessage(res.error || 'Google Sign-In failed.');
+      } else {
+        onClose();
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Google Sign-In failed.');
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -178,11 +196,27 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isGoogleLoading}
                 className="w-full min-h-[44px] py-2.5 px-4 bg-[#F28C28] hover:bg-[#d9771a] text-white font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 disabled:opacity-70 cursor-pointer"
               >
                 <span>{isLoading ? 'Signing In...' : 'Sign In to ESS'}</span>
                 <ArrowRight className="w-4 h-4" />
+              </button>
+
+              {/* Google Sign-In for Cloud Firestore Sync */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading || isGoogleLoading}
+                className="w-full min-h-[44px] py-2.5 px-4 bg-white hover:bg-orange-50/50 text-slate-800 font-bold text-xs rounded-xl border border-slate-300 shadow-xs transition-all flex items-center justify-center space-x-2 disabled:opacity-70 cursor-pointer"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z" />
+                  <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z" />
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z" />
+                </svg>
+                <span>{isGoogleLoading ? 'Connecting Google Account...' : 'Continue with Google (Firestore Sync)'}</span>
               </button>
 
               {/* Register Callout */}

@@ -1,0 +1,1344 @@
+# MASTER SYSTEM REVISION PROMPT
+# SJHR201 – LGU SAN JOSE HUMAN RESOURCE MANAGEMENT INFORMATION SYSTEM
+### Complete Functional Revision and Integration
+
+You are a senior full-stack developer specializing in government Human Resource Management Information Systems.
+
+Your task is to revise and improve the existing **SJHR201 – LGU San Jose HRMIS** project.
+
+This is an existing project. Do not create an unrelated application or unnecessarily replace working features. Inspect the current source code, identify incomplete or broken functions, and implement the requirements below.
+
+The final application must be functional, responsive, secure, simple to operate, and installable as a Progressive Web Application (PWA).
+
+The system is intended for the Local Government Unit of San Jose, Occidental Mindoro.
+
+---
+
+# 1. TECHNOLOGY AND SYSTEM ARCHITECTURE
+
+Use only the following:
+
+- React
+- TypeScript
+- Vite
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+- GitHub
+- Vercel
+
+Existing GitHub repository:
+
+`sjhrms01`
+
+Existing Firebase project:
+
+`stable-timing-7pthm`
+
+Existing Firestore database ID:
+
+`ai-studio-sjhr201humanreso-c41a070c-1eb0-4cba-9adf-7f85ec3e27de`
+
+Firestore location:
+
+`asia-south1`
+
+Firebase must be the actual and authoritative backend.
+
+Do not introduce:
+- Google Sheets
+- Google Drive as a database
+- Google Apps Script
+- Supabase
+- MySQL
+- Another hosting platform
+- LocalStorage as the primary database
+
+Use LocalStorage only for non-sensitive interface preferences.
+
+Use Firebase Storage for actual uploaded documents and images.
+
+Use Firestore for employee records, requests, transactions, configurations, notifications, and audit history.
+
+Use secure backend operations for sensitive transactions, approvals, document generation, and digital signing.
+
+Do not expose Firebase service credentials, email credentials, or private signing keys in frontend code.
+
+# 2. IMPORTANT REVISION RULES
+
+Before changing the project:
+
+1. Inspect the existing project structure.
+2. Identify existing working modules.
+3. Identify incomplete modules and broken functions.
+4. Check the existing Firebase integration.
+5. Check existing authentication and user roles.
+6. Check existing Firestore collections and data structures.
+7. Identify duplicated features and redundant sidebar menus.
+8. Preserve existing administrator accounts.
+9. Preserve existing Firebase data.
+10. Do not reset or delete the existing Firebase project.
+
+Do not replace working functionality with visual placeholders.
+
+Every button must work.
+
+Every form must validate and save.
+
+Every table must retrieve actual database records.
+
+Every search and filter must work.
+
+Every upload must save an actual file to Firebase Storage.
+
+Every important transaction must be recorded in Firestore.
+
+Display actual loading, success, empty, and error states.
+
+Never show a successful save or approval message when the database operation failed.
+
+Do not silently ignore Firebase errors.
+
+Do not claim a feature is complete merely because its interface exists.
+
+# 3. DESIGN AND USER EXPERIENCE
+
+Use the selected **Soft Blue theme**.
+
+The interface must be simple, professional, and practical.
+
+Design:
+- Soft blue sidebar
+- Very light blue workspace
+- White content cards
+- White top navigation
+- Subtle borders and shadows
+- Blue primary buttons
+- Orange ESS identity
+- Readable typography
+- Consistent spacing
+
+HR Management uses blue as its main identity.
+
+Employee Self-Service uses orange as its main identity.
+
+Avoid:
+- Excessive gradients
+- Oversized dashboard cards
+- Unnecessary animations
+- Excessive colors
+- Redundant sidebar menus
+- Repeated actions
+- Overcomplicated tables
+- Decorative controls that do nothing
+
+The interface should be easy for ordinary municipal employees and HR personnel to understand.
+
+# 4. LANDING PAGE
+
+The application must open on a landing page.
+
+Do not automatically log in users.
+
+Display only two main portals:
+
+1. HR MANAGEMENT
+2. EMPLOYEE SELF-SERVICE
+
+Include:
+- LGU San Jose branding
+- Municipal seal placeholder
+- HRMO logo placeholder
+- Application title
+- Install App button
+- Clear portal selection
+
+Each portal must have its own appropriate login and access permissions.
+
+# 5. USER ROLES AND PERMISSIONS
+
+Implement these roles:
+
+1. Developer
+2. HR Administrator
+3. HR Staff
+4. Payroll Personnel
+5. Employee
+
+### Developer
+- System configuration
+- Workflow configuration
+- Application settings
+- Technical diagnostics
+- Backup and recovery
+- Roles and permissions configuration
+
+Developer access must not automatically provide HR transaction approval or payroll authorization.
+
+### HR Administrator
+- Full HR management
+- Employee Masterlist
+- Employee records
+- 201 Files
+- Leave Management
+- SALN monitoring
+- Document requests
+- Payroll and payslip monitoring
+- User management
+- Reports
+- Audit Logs
+
+### HR Staff
+- Access only the modules and actions assigned by HR Administrator.
+- Permissions must be configurable.
+
+### Payroll Personnel
+- Access authorized payroll and payslip information.
+- No unrelated HR administrative access unless granted.
+
+### Employee
+- Access only their own ESS account and permitted information.
+- Submit requests and documents.
+- View personal records.
+- Track applications and requests.
+
+Enforce permissions through Firebase security rules and trusted backend operations, not only frontend visibility.
+
+# 6. HR MANAGEMENT SIDEBAR
+
+Use the following main sidebar:
+
+1. Dashboard
+2. Employee Masterlist
+3. 201 Files
+4. Leave Management
+5. SALN Management
+6. Payroll and Payslips
+7. Overtime
+8. Travel Orders
+9. Pass Slips
+10. Employee Document Requests
+11. Training and Development
+12. Performance Management
+13. Office Directory
+14. Reports
+15. User Management
+16. Notifications
+17. Audit Logs
+18. Developer Control Center
+
+Important:
+- Do not create a separate Employee Profiles sidebar menu.
+- Employee profiles open from the Employee Masterlist.
+- Do not create separate Wellness Leave or Wellness Break sidebar entries.
+- W-01 and W-02 belong inside Leave Management.
+- Do not implement DTR, biometrics, or attendance monitoring in this version.
+
+# 7. EMPLOYEE MASTERLIST
+
+The Employee Masterlist is the main employee database.
+
+Columns:
+
+- Employee Number
+- Employee Name
+- Profile Picture
+- Office
+- Position
+- Classification
+- Employment Status
+- Record Status
+- Actions
+
+Features:
+- Search by employee name or number.
+- Filter by office.
+- Filter by classification.
+- Filter by employment status.
+- Add employee.
+- View employee.
+- Edit employee.
+- Archive employee.
+- Restore archived employee.
+- Export records.
+- Pagination.
+
+Employee classifications:
+
+- Permanent
+- Temporary
+- Casual
+- Job Order (JO)
+- Contract of Service (COS)
+- Elective Officials
+
+Use a permanent internal employee ID.
+
+If an employee number changes, preserve the previous employee number in employment history.
+
+Never permanently delete employee records through normal HR operations.
+
+Use archiving for inactive or separated employees.
+
+Record important changes in Audit Logs.
+
+# 8. SHARED EMPLOYEE PROFILE AND PROFILE PICTURE
+
+This is an important integration requirement.
+
+ESS and HR Management must use the SAME employee profile record in Firestore.
+
+### Profile Picture Synchronization
+
+When an employee uploads or changes their profile picture through ESS:
+
+1. Upload the actual image to Firebase Storage.
+2. Update the employee's profile picture reference in Firestore.
+3. Automatically reflect the updated image in HR Management.
+4. Display the same image in the Employee Masterlist.
+5. Display the same image in the HR Employee Profile.
+6. Display the same image in the ESS Profile and account header.
+
+HR-authorized personnel must also be able to update the employee's picture.
+
+Changes from either portal must automatically reflect in the other.
+
+Use Firestore real-time listeners where appropriate.
+
+Do not maintain separate profile pictures for ESS and HR Management.
+
+Provide:
+- Upload
+- Crop
+- Preview
+- Replace
+- Remove
+- Default avatar when no picture exists
+
+Validate image types and file sizes.
+
+Only the employee or authorized HR personnel can update the picture.
+
+Record profile picture changes in Audit Logs.
+
+### Employee Profile Sections
+
+1. Personal Information
+2. Employment Information
+3. Family Background
+4. Educational Background
+5. Eligibility and Professional Licenses
+6. Government Information
+7. 201 Files
+8. Employment History
+
+Employees may request changes to personal information through ESS.
+
+Sensitive employment and official HR information must require HR review before becoming official.
+
+# 9. 201 FILES MANAGEMENT
+
+Create a searchable 201 Files module.
+
+Search employees by name or employee number.
+
+Do not use a dropdown-only employee selector.
+
+Document categories:
+
+1. Personal Information
+2. Appointment and Employment
+3. Educational Records
+4. Eligibility and Professional Licenses
+5. Medical and Pre-Employment Requirements
+6. Government IDs and Contributions
+7. SALN and Accountability Documents
+8. Training and Development
+9. Performance Management
+10. Leave and Wellness Records
+11. Compensation and Benefits
+12. Administrative and Legal Records
+13. Personnel Clearances
+14. Separation, Retirement and Transfer
+15. Other Personnel Documents
+
+Features:
+- Upload
+- Preview
+- Download
+- Replace
+- Document metadata
+- Verification
+- Version history
+- Uploaded by
+- Date uploaded
+
+Document statuses:
+- Missing – Required
+- Missing – Optional
+- For Review
+- Verified
+- Returned
+
+Required documents must depend on employee classification and applicable requirements.
+
+Do not assume every document requirement applies to all employees.
+
+Use Firebase Storage for actual files and Firestore for metadata.
+
+# 10. EMPLOYEE DOCUMENT SUBMISSION TO 201 FILES
+
+Employees can upload requested personnel documents through ESS.
+
+Workflow:
+
+1. HR creates a document request.
+2. Employee receives a notification.
+3. Employee opens the requested document.
+4. Employee uploads the file.
+5. HR receives a notification.
+6. HR reviews the submission.
+7. HR verifies or returns it with remarks.
+8. Verified documents are associated with the employee's 201 Files.
+
+Support PDF, JPG, JPEG, and PNG.
+
+Provide mobile document capture with:
+- Camera capture
+- Crop
+- Rotate
+- Retake
+- Remove page
+- Reorder pages
+- Combine multiple pages into PDF
+- Preview
+- Confirm upload
+
+Do not present a basic file picker as a complete scanning system.
+
+# 11. LEAVE MANAGEMENT – SIMPLIFIED MONITORING
+
+Leave Management must primarily be a monitoring and tracking module.
+
+Do not make the monitoring page complicated.
+
+The HR monitoring table should display:
+
+- Application Number
+- Employee Name
+- Office
+- Leave Type
+- Inclusive Dates
+- Number of Days
+- Current Status
+
+Statuses:
+
+- Pending Supervisor Approval
+- Pending Mayor Approval
+- Approved – For HR Review
+- For Employee Correction
+- HR Finalized
+- Disapproved
+
+The monitoring table is for tracking application progress.
+
+Do not display every application detail and unnecessary action button directly in the monitoring table.
+
+When HR opens an application that has completed both approvals, display a separate detailed review page.
+
+# 12. LEAVE APPLICATION FORMS
+
+Support:
+
+### CSC Form 6
+Use the supplied original CSC Form 6 Excel templates as reference.
+
+Preserve original wording, layout, fields, signature areas, and approval sections as closely as possible.
+
+Generate a printable completed form.
+
+### W-01 Wellness Leave Application
+- Permanent employees only.
+- Supplements CSC Form 6.
+- Does not replace CSC Form 6.
+- Follow applicable local ordinance and rules.
+
+### W-02 Wellness Break Request
+- JO and COS employees only.
+- Not a statutory leave-credit application.
+- Do not deduct statutory leave credits.
+- Compensation treatment follows applicable ordinance or contract.
+
+ESS must show only the appropriate form based on employee classification.
+
+# 13. LEAVE APPROVAL WORKFLOW
+
+Implement this actual sequence:
+
+### Stage 1 – Employee
+
+Employee submits the application through ESS.
+
+### Stage 2 – Immediate Supervisor
+
+The Immediate Supervisor receives a notification and secure approval link.
+
+The Supervisor can:
+- Approve
+- Return for correction
+- Disapprove with reason
+
+### Stage 3 – Mayor
+
+After Supervisor approval, the Mayor automatically receives the application notification.
+
+The Mayor can:
+- Approve
+- Return for clarification
+- Reject with reason
+
+### Stage 4 – HR Final Review
+
+Only after both Supervisor and Mayor approval should the application enter the detailed HR review queue.
+
+HR can:
+- Open the complete application.
+- Review supporting documents.
+- Check applicable leave credits.
+- Check completeness.
+- Verify dates and approved number of days.
+- Discuss corrections with the employee.
+- Return the application with specific instructions.
+- Finalize the application when everything is correct.
+
+### Stage 5 – Employee Correction
+
+If HR requires corrections:
+
+1. Mark the application For Employee Correction.
+2. Enter specific remarks.
+3. Notify the employee.
+4. Allow the employee to edit and resubmit.
+5. Preserve the previous version.
+6. Record revision history.
+
+If a material change affects the dates, leave type, or approved details, obtain renewed approvals from the appropriate approvers before finalization.
+
+### Stage 6 – HR Final Acceptance
+
+After HR accepts:
+
+- Record final HR acceptance.
+- Generate the approved printable application.
+- Generate required document copies.
+- Notify the employee.
+- Save the application in employee records.
+- Update applicable leave credits.
+- Record the transaction in Audit Logs.
+
+Only HR Final Acceptance triggers applicable leave-credit deductions.
+
+Pending, returned, or rejected applications must not deduct credits.
+
+Supervisor or Mayor approval alone must not deduct credits.
+
+Prevent duplicate deductions using transaction IDs and Firestore transactions.
+
+# 14. SAMPLE LEAVE APPROVER EMAILS
+
+Use these as initial configurable sample recipients:
+
+Immediate Supervisor:
+
+`jmmagan123mpdo@gmail.com`
+
+Mayor:
+
+`juanmig488@gmail.com`
+
+These are test/sample addresses, not verified official approver identities.
+
+Do not permanently hardcode these recipients.
+
+Allow authorized configuration in Workflow Settings.
+
+Use secure email delivery through a backend integration.
+
+Do not expose email credentials in the frontend.
+
+Do not claim an email has been sent if the email service is not configured or delivery failed.
+
+# 15. LEAVE CREDITS
+
+Create an ESS page called My Leave Credits.
+
+Display:
+- Beginning Balance
+- Earned Credits
+- Used Credits
+- Remaining Balance
+- Pending Applications
+- Leave History
+
+Keep a transaction history for every credit adjustment.
+
+Update balances only after HR final acceptance and according to applicable rules.
+
+# 16. SALN MANAGEMENT – EMPLOYEE SUBMISSION AND HR MONITORING
+
+SALN must be employee-initiated.
+
+The employee accomplishes and submits their own SALN through ESS.
+
+### ESS – My SALN
+
+Employees can:
+
+1. Select the applicable SALN type.
+2. Select the applicable period.
+3. Accomplish the SALN online or upload an already completed SALN.
+4. Attach supporting pages.
+5. Sign the SALN.
+6. Preview the complete signed document.
+7. Submit to HR.
+8. Track submission status.
+9. Correct and resubmit if returned.
+10. View their SALN submission history.
+
+Support:
+- Annual SALN
+- Entry SALN
+- Exit SALN
+
+Apply requirements according to applicable laws and employee coverage.
+
+### SALN Signature
+
+The SALN must be complete and signed by the employee before submission.
+
+Support:
+- Uploading an image of the employee's handwritten signature and placing it in the designated signature area.
+- Uploading a scanned or photographed copy of an already physically signed SALN.
+- Printing, physically signing, and uploading the completed SALN.
+
+Never fabricate or imitate an employee signature.
+
+### HR Management – SALN Monitoring
+
+The HR SALN tab must primarily be a tracking and monitoring page.
+
+Display:
+- Employee Number
+- Employee Name
+- Office
+- SALN Type
+- SALN Period
+- Submission Date
+- Current Status
+- Actions
+
+Statuses:
+- Not Submitted
+- Submitted
+- For HR Review
+- Returned for Correction
+- Resubmitted
+- Verified
+
+HR can:
+- Monitor by office.
+- Monitor by employee.
+- Filter by period and status.
+- Open the actual submitted signed SALN.
+- Review completeness.
+- Verify.
+- Return with remarks.
+- Download and print.
+- View previous submissions and revisions.
+- Generate monitoring reports.
+
+Employees must not see other employees' SALN.
+
+Restrict SALN records to authorized HR personnel.
+
+Preserve previous versions and never silently overwrite earlier submissions.
+
+# 17. PAYROLL AND PAYSLIPS – MONITORING ONLY
+
+Do not build a full payroll computation system in this module.
+
+Actual payroll calculations and preparation remain with the existing authorized payroll process.
+
+The HRMIS will manage employee payslip requests, verification, digital sealing, and release.
+
+### ESS – My Payslips
+
+Employees can:
+
+- Select payroll month and year.
+- Upload an existing payslip for verification and HR sealing.
+- Generate a payslip only if authorized payroll data is available and the generation function is implemented.
+- Preview.
+- Submit to HR.
+- Track status.
+- Download the final HR-authorized copy.
+
+Never invent payroll amounts or generate fictional payslips.
+
+### HR Management – Payroll and Payslips Monitoring
+
+Display:
+- Employee Number
+- Employee Name
+- Office
+- Payroll Period
+- Request Date
+- Current Status
+- Actions
+
+Statuses:
+- Not Requested
+- Submitted
+- For HR Review
+- Returned for Correction
+- For Digital Seal
+- Approved and Sealed
+- Released to Employee
+
+HR can:
+- Open and review the submitted payslip.
+- Verify employee identity and payroll period.
+- Return incorrect documents with remarks.
+- Apply authorized digital sealing.
+- Release the final copy.
+- View processing history.
+
+### Digital Seal
+
+Do not represent a pasted logo as a cryptographic digital signature.
+
+Where a cryptographic digital signature is implemented, use an appropriate signing certificate and protect private keys securely on the backend.
+
+If only a visual HR stamp is configured, label the document as an HR-stamped copy.
+
+Record the authorized officer and date of sealing.
+
+# 18. UNIVERSAL EMPLOYEE DOCUMENT REQUEST SYSTEM
+
+Create ONE centralized document request system for all employee-originated HR document requests.
+
+HR Management menu:
+
+**Employee Document Requests**
+
+ESS menu:
+
+**My Document Requests**
+
+Do not create separate complicated request systems for individual document types.
+
+### Available Document Requests
+
+1. Certificate of Employment
+2. Service Record
+3. Certificate of Leave Credits
+4. Certificate of Employment with Compensation
+5. Payslip
+6. Certified Payslip Copy
+7. IPCR Rating Certificate
+8. No Pending Case Clearance
+9. BIR Form 2316
+10. Other HR-issued certifications and documents
+
+Allow authorized HR personnel to configure additional request types.
+
+### ESS Request Form
+
+Employees can:
+- Select document type.
+- Enter purpose.
+- Supply required information.
+- Upload supporting documents when applicable.
+- Submit.
+- View request reference number.
+- Monitor status.
+- Read HR remarks.
+- Correct and resubmit.
+- Download completed documents when allowed.
+
+### HR Monitoring Page
+
+Display:
+- Request Number
+- Employee Number
+- Employee Name
+- Office
+- Document Type
+- Purpose
+- Request Date
+- Current Status
+- Actions
+
+Provide search and filters.
+
+The page is primarily for tracking.
+
+Display full request details only when HR opens a specific request.
+
+### Standard Processing Workflow
+
+1. Employee submits through ESS.
+2. Request is saved to Firestore.
+3. HR receives a notification.
+4. HR opens and reviews the request.
+5. HR processes, returns, or rejects.
+6. Employee receives remarks if correction is required.
+7. HR prepares or verifies the requested document.
+8. HR signs or digitally seals when applicable.
+9. HR generates the final document copies.
+10. Employee receives the completed document according to its configured release method.
+
+Statuses:
+
+- Submitted
+- For HR Review
+- Processing
+- For Employee Correction
+- Resubmitted
+- For HR Signature / Digital Seal
+- Ready for Release
+- Released
+- Personally Released / Claimed
+- Rejected
+- Cancelled
+
+# 19. DOCUMENT RELEASE METHODS
+
+Each document type must have a configurable release method.
+
+Available methods:
+
+1. Digital Download
+2. Personal Claiming at HR Office
+3. HR Verification and Digital Seal
+4. HR Processing Only
+
+### Initial Personal Claiming Documents
+
+Configure these initially for personal claiming:
+
+- Certificate of Employment
+- Service Record
+- Certificate of Employment with Compensation
+- No Pending Case Clearance
+- Certified True Copies of 201 Files
+- Certified Copies of Appointments
+- Original signed HR documents
+- Other certifications configured by HR
+
+### Digital Release After HR Processing
+
+Examples:
+
+- Payslips
+- Certificate of Leave Credits
+- Approved Leave Applications
+- Approved Travel Orders
+- Approved Pass Slips
+- Eligible digital certifications
+
+BIR Form 2316 and other sensitive documents must follow applicable release and confidentiality requirements.
+
+### Certificate of Employment Special Rule
+
+COE requests are submitted through ESS for monitoring only.
+
+The actual COE must be processed and released personally through HR.
+
+Workflow:
+
+1. Employee submits COE request.
+2. HR receives and monitors the request.
+3. HR verifies employment records.
+4. HR prepares and prints the COE.
+5. Authorized HR personnel signs it.
+6. Employee personally visits HR to claim it.
+7. HR records the releasing officer, release date, and employee acknowledgment.
+8. Status changes to Personally Released / Claimed.
+
+Do not automatically generate and release COEs through ESS.
+
+ESS only handles the request and status tracking.
+
+# 20. MANDATORY TWO-PDF REQUIREMENT
+
+Every completed Employee Document Request must generate and retain TWO separate PDF copies.
+
+### HR COPY
+
+- Official HR record.
+- Stored securely in Firebase Storage.
+- Accessible only to authorized HR personnel.
+- Linked to the employee's request record.
+- Retained for official reference.
+
+### EMPLOYEE COPY
+
+- Final copy intended for the requesting employee.
+- Available through ESS if digital release is authorized.
+- Prepared for printing and personal claiming when required.
+- Accessible only to the requesting employee and authorized HR personnel.
+
+Both PDFs must contain the same finalized document content.
+
+Both must use:
+- Same request reference number.
+- Same employee information.
+- Same document type.
+- Same issuance date.
+- Same document version.
+- Same authorized signature or seal when applicable.
+
+Generate both copies only after HR completes the required authorization.
+
+Do not generate official completed copies for pending, returned, or rejected requests.
+
+### Version Control
+
+When a document is corrected or reissued:
+
+- Preserve the previous HR copy.
+- Preserve the previous employee copy.
+- Generate a new pair of PDFs.
+- Assign a new version.
+- Record the reason for revision.
+- Preserve the full request history.
+
+Never silently overwrite previously released documents.
+
+# 21. DOCUMENT SIGNATURE AND SEAL MANAGEMENT
+
+Provide a configurable HR signature and digital seal workflow.
+
+Document settings should identify whether each type requires:
+
+- HR preparation
+- HR verification
+- HR signature
+- Digital seal
+- Personal claiming
+- Digital release
+- Upload and verification only
+
+Record:
+- Authorized HR officer
+- Date and time
+- Document version
+- Request reference number
+- Seal or signature verification information where supported
+
+Protect private signing keys on the backend.
+
+Do not call an ordinary logo or pasted image a cryptographically verified digital signature.
+
+# 22. OTHER HR MODULES
+
+Retain and improve the following modules:
+
+### Overtime
+- Employee requests
+- Monitoring
+- Approval tracking
+- HR records
+
+### Travel Orders
+- Application
+- Approval
+- Monitoring
+- Printable approved document
+
+### Pass Slips
+- Employee application
+- Approval tracking
+- Printable approved copy
+
+### Training and Development
+- Training records
+- Employee participation
+- Training history
+- Reports
+
+### Performance Management
+- Performance records
+- IPCR-related records
+- Monitoring
+- Authorized employee access
+
+### Employee Profile Updates
+- Employee-submitted change requests
+- HR review
+- Approval or return
+- Updated official profile
+- Revision history
+
+### Office Directory
+- Office name
+- Office details
+- Active or inactive status
+- Authorized editing by HR Administrator
+
+Do not implement DTR, biometrics, or attendance monitoring.
+
+Do not invent legal or organizational policies. Provide configurable settings when requirements depend on local rules.
+
+# 23. USER MANAGEMENT
+
+HR Administrator can:
+
+- Create users.
+- Assign roles.
+- Link ESS accounts to employee records.
+- Activate or deactivate accounts.
+- Initiate password resets.
+- Assign HR Staff permissions.
+- View account status.
+
+Do not expose passwords.
+
+An employee must be linked to only the correct employee record.
+
+Prevent employees from viewing other employees' records.
+
+Preserve existing administrator accounts.
+
+# 24. NOTIFICATIONS
+
+Implement Firestore-based notifications.
+
+Notify users about:
+
+- Leave applications
+- Supervisor decisions
+- Mayor decisions
+- HR final decisions
+- Leave corrections
+- SALN submissions
+- SALN returns
+- Document submissions
+- Document requests
+- Request processing
+- Document releases
+- Payslip verification
+- Employee profile updates
+- HR announcements
+
+Allow users to mark notifications as read.
+
+Use email notifications when the email service is configured.
+
+Do not claim delivery when sending fails.
+
+# 25. AUDIT LOGS
+
+Record important activities:
+
+- Account events
+- Employee creation
+- Employee profile changes
+- Profile picture changes
+- Employee archiving
+- Document uploads
+- Document replacement
+- Document verification
+- SALN submission
+- SALN review
+- Leave submission
+- Leave approvals
+- Leave-credit adjustments
+- Payslip processing
+- Document requests
+- Document releases
+- Digital sealing
+- User and permission changes
+- System configuration changes
+
+Record:
+- User ID
+- User role
+- Action
+- Affected record
+- Date and time
+- Related transaction ID
+
+Audit logs must not be editable through ordinary HR screens.
+
+# 26. DEVELOPER CONTROL CENTER
+
+Create a separate Developer Control Center.
+
+Include:
+
+- System Settings
+- Branding and Appearance
+- ESS Configuration
+- Workflow Configuration
+- Approver Email Configuration
+- Document Release Settings
+- Email Notifications
+- Roles and Permissions
+- Firebase Configuration Status
+- Storage Status
+- Backup and Recovery
+- Audit Logs
+- Diagnostics
+
+Do not mix developer configuration with ordinary HR transactions.
+
+# 27. FIREBASE DATABASE AND STORAGE
+
+Use a maintainable Firestore structure.
+
+Suggested collections:
+
+- users
+- employees
+- offices
+- employeeDocuments
+- documentRequests
+- documentVersions
+- leaveApplications
+- leaveCredits
+- leaveCreditTransactions
+- salnRecords
+- payrollRecords
+- payslipRequests
+- overtimeRequests
+- travelOrders
+- passSlips
+- trainingRecords
+- performanceRecords
+- notifications
+- auditLogs
+- systemSettings
+- workflowSettings
+
+Use stable IDs and proper document references.
+
+Avoid duplicate employee records.
+
+Use Firestore transactions for important multi-record changes.
+
+Store actual PDFs and images in Firebase Storage.
+
+Store file references, metadata, and access information in Firestore.
+
+Implement restrictive Firestore and Storage security rules.
+
+Employees can only access their own permitted data.
+
+HR Staff access must follow assigned permissions.
+
+SALN and payroll documents require appropriate confidentiality restrictions.
+
+# 28. PROGRESSIVE WEB APPLICATION
+
+The system must be installable on:
+
+- Android
+- iPhone and iPad
+- Windows desktop
+- Supported desktop browsers
+
+Implement:
+
+- Valid web app manifest
+- Service worker
+- Application icons
+- Standalone display
+- Install App button on landing page
+- Responsive mobile layout
+- Responsive desktop layout
+- Automatic update handling
+
+Cache only safe application shell assets.
+
+Do not cache sensitive employee records, SALN, payslips, payroll, or confidential documents for offline access by default.
+
+# 29. SECURITY AND DATA INTEGRITY
+
+Implement:
+
+- Authentication checks
+- Role-based authorization
+- Employee record ownership checks
+- Restricted document access
+- Secure Storage rules
+- Secure approval links
+- Backend validation
+- Duplicate submission prevention
+- Duplicate leave-credit deduction prevention
+- Transaction history
+- File type and size validation
+- Safe error handling
+
+Do not rely on frontend-only permissions.
+
+Do not expose confidential employee information to unauthorized users.
+
+Do not allow unauthorized users to change HR-approved records.
+
+# 30. IMPLEMENTATION PRIORITY
+
+Do not try to generate and finish the entire application in one unverified code-generation pass.
+
+Work in stages.
+
+### Stage 1 – Existing Project and Foundation
+- Inspect existing source.
+- Repair project dependencies.
+- Firebase connection.
+- Authentication.
+- Landing page.
+- User roles.
+- PWA installation.
+
+### Stage 2 – Employee Records
+- Masterlist.
+- Employee Profile.
+- Profile picture synchronization.
+- Office Directory.
+- User Management.
+
+### Stage 3 – 201 Files
+- Document categories.
+- Upload and preview.
+- Verification.
+- ESS document submissions.
+- Firebase Storage integration.
+
+### Stage 4 – Leave Management
+- Simplified monitoring.
+- CSC Form 6.
+- W-01.
+- W-02.
+- Supervisor approval.
+- Mayor approval.
+- HR final review.
+- Employee correction.
+- Leave-credit management.
+
+### Stage 5 – SALN
+- ESS SALN accomplishment and upload.
+- Employee signature.
+- SALN monitoring.
+- HR review.
+- Correction and resubmission.
+- Version history.
+
+### Stage 6 – Payroll and Document Requests
+- Payslip monitoring.
+- Employee document requests.
+- HR processing.
+- Personal claiming.
+- Digital release.
+- Mandatory two-PDF generation.
+- Signature and seal workflows.
+
+### Stage 7 – Remaining HR Modules
+- Overtime.
+- Travel Orders.
+- Pass Slips.
+- Training.
+- Performance Management.
+- Reports.
+
+### Stage 8 – Administration and Security
+- Notifications.
+- Audit Logs.
+- Developer Control Center.
+- Firebase security rules.
+- Backup and recovery.
+- Final testing.
+
+Preserve completed and tested work when moving to the next stage.
+
+# 31. TESTING AND ACCEPTANCE
+
+Do not declare the system complete until actual operations have been tested.
+
+At minimum, verify:
+
+1. Users can sign in and sign out.
+2. Employees cannot access another employee's data.
+3. HR roles enforce their permissions.
+4. HR can create and edit employee records.
+5. Employee profile pictures uploaded through ESS appear in HR Management.
+6. HR picture changes appear in ESS.
+7. Employee records remain available after refresh and sign-in.
+8. 201 Files upload actual files to Firebase Storage.
+9. Employees can submit SALN with their actual signature.
+10. HR can monitor and review SALN submissions.
+11. Leave applications follow Supervisor → Mayor → HR.
+12. HR receives detailed applications only after both approvals.
+13. Employees can correct and resubmit returned applications.
+14. Leave credits are deducted only after HR final acceptance.
+15. Payroll and payslip monitoring works.
+16. Employees can submit document requests.
+17. HR can process and release requests.
+18. COE is configured for personal claiming.
+19. Every completed document request generates two separate PDFs.
+20. HR and employee copies are retained correctly.
+21. Employees can only download their own released copies.
+22. Audit Logs record important transactions.
+23. PWA installation works.
+24. Firestore and Storage rules prevent unauthorized access.
+25. The project builds successfully for production.
+
+Provide a testing report identifying:
+- Working features
+- Partially working features
+- Incomplete features
+- Failed tests
+- Required Firebase configuration
+- Required email configuration
+- Required Vercel environment variables
+
+Never report an untested feature as working.
+
+# 32. FINAL INSTRUCTIONS
+
+The final goal is a practical, secure, functional HRMIS for LGU San Jose.
+
+Prioritize:
+1. Working functions
+2. Accurate employee records
+3. Reliable Firebase integration
+4. Proper access permissions
+5. Simple monitoring pages
+6. Clear employee workflows
+7. Secure document handling
+8. Accurate transaction history
+9. Easy maintenance
+
+Keep the UI simple.
+
+Do not add unnecessary functions.
+
+Do not create redundant menus.
+
+Do not fabricate records.
+
+Do not delete existing Firebase data.
+
+Do not remove existing administrator accounts.
+
+Do not implement DTR or biometrics.
+
+Do not use LocalStorage as the primary database.
+
+Do not pretend that an unfinished feature is operational.
+
+Inspect, revise, implement, test, and report the results.
+
+**The final deliverable must be a working SJHR201 application connected to the existing Firebase project, ready for GitHub and Vercel deployment after successful testing.**

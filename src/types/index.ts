@@ -82,10 +82,6 @@ export interface Employee {
   emergencyContactPhone?: string;
   emergencyContactRelation?: string;
   
-  // Shared profile photo stored in Firebase Storage; same reference used by ESS and HR
-  profilePictureUrl?: string;
-  profilePicturePath?: string;
-
   // ESS Status
   essRegistered: boolean;
   essUsername?: string;
@@ -227,49 +223,9 @@ export interface LeaveApplication {
   hrFinalRemarks?: string;
   hrFinalOfficer?: string;
   hrFinalDate?: string;
-  supervisorEmail?: string;
-  mayorEmail?: string;
-  employeeEmail?: string;
-  attachedToAccomplishmentReport?: boolean;
-  hrClarifications?: { text: string; date: string; officer: string }[];
   approvedDaysWithPay?: number;
   approvedDaysWithoutPay?: number;
   createdAt: string;
-}
-
-export interface InteractiveEmailMessage {
-  id: string;
-  leaveId: string;
-  toEmail: string;
-  recipientName: string;
-  recipientRole: 'supervisor' | 'mayor' | 'employee' | 'hr';
-  subject: string;
-  sentAt: string;
-  status: 'sent' | 'opened' | 'action_taken';
-  actionTaken?: 'approved' | 'disapproved' | 'printed';
-  actionTakenAt?: string;
-  employeeName: string;
-  officeName: string;
-  position: string;
-  leaveType: string;
-  workingDays: number;
-  inclusiveDates: string;
-  detailsOfLeave: string;
-  supervisorEndorsement?: {
-    endorsedBy: string;
-    endorsedAt: string;
-    remarks: string;
-  };
-  mayorApproval?: {
-    approvedBy: string;
-    approvedAt: string;
-    remarks: string;
-  };
-  hrCertification?: {
-    certifiedBy: string;
-    certifiedAt: string;
-    remarks: string;
-  };
 }
 
 export type WellnessStatus = 'pending_supervisor' | 'pending_head' | 'approved' | 'disapproved';
@@ -453,6 +409,13 @@ export interface AuditLog {
   timestamp: string;
 }
 
+export interface LeaveWorkflowRoutingSettings {
+  supervisorEmail: string;
+  mayorEmail: string;
+  hrFinalReviewerEmail: string;
+  emailNotificationsEnabled: boolean;
+}
+
 export interface SystemSettings {
   systemName: string;
   lguName: string;
@@ -462,11 +425,50 @@ export interface SystemSettings {
   hrmoHead: string;
   essSelfRegistrationEnabled: boolean;
   maintenanceMode: boolean;
+  leaveWorkflowRouting: LeaveWorkflowRoutingSettings;
   brandColors: {
     primaryBlue: string;
     softBlue: string;
     primaryOrange: string;
   };
+}
+
+export type EmailWorkflowType = 'CSC_FORM_6' | 'WELLNESS_W01' | 'WELLNESS_W02' | 'SYSTEM_TEST';
+
+export type EmailWorkflowStage =
+  | 'stage_1_submitted'
+  | 'stage_2_supervisor_approved'
+  | 'stage_2_supervisor_disapproved'
+  | 'stage_3_mayor_approved'
+  | 'stage_3_mayor_disapproved'
+  | 'stage_5_hr_finalized'
+  | 'stage_5_hr_returned'
+  | 'test_dispatch';
+
+export type EmailRecipientRole = 'supervisor' | 'mayor' | 'hr_final_reviewer' | 'employee' | 'test';
+export type EmailProvider = 'sendgrid' | 'mailgun' | 'none';
+export type EmailDispatchStatus = 'sent' | 'failed' | 'unconfigured' | 'skipped';
+
+export interface EmailLog {
+  id: string;
+  leaveApplicationId: string;
+  workflowType: EmailWorkflowType;
+  workflowStage: EmailWorkflowStage;
+  applicantName?: string;
+  recipientEmail: string;
+  recipientRole: EmailRecipientRole;
+  recipientName?: string;
+  subject: string;
+  bodyPreview?: string;
+  provider: EmailProvider;
+  providerMessageId?: string;
+  httpStatusCode?: number;
+  status: EmailDispatchStatus;
+  errorMessage?: string;
+  triggeredByUid: string;
+  triggeredByName?: string;
+  persistedToFirestore?: boolean;
+  createdAt: string;
 }
 
 export type AttendanceStatus = 

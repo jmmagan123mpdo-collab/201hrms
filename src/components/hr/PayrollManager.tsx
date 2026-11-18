@@ -26,8 +26,14 @@ interface PayrollManagerProps {
 }
 
 export const PayrollManager: React.FC<PayrollManagerProps> = ({ employees }) => {
-  // Do not fabricate historical payroll records. Populate this monitor only from verified payroll/payslip records.
-  const initialPayslips = useMemo<PayslipRecord[]>(() => [], []);
+  // Aggregate initial historical payslips for all employees
+  const initialPayslips = useMemo(() => {
+    let all: PayslipRecord[] = [];
+    employees.slice(0, 8).forEach(emp => {
+      all = all.concat(generateHistoricalPayslips(emp));
+    });
+    return all;
+  }, [employees]);
 
   const [payslips, setPayslips] = useState<PayslipRecord[]>(initialPayslips);
   const [searchQuery, setSearchQuery] = useState('');

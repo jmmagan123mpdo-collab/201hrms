@@ -245,6 +245,54 @@
         "syncedAt": { "type": "string" }
       },
       "required": ["id", "employeeId", "employeeName", "date", "status", "syncStatus"]
+    },
+    "EmailLog": {
+      "title": "EmailLog",
+      "description": "Transactional email delivery log for automated leave and wellness approval workflows",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "leaveApplicationId": { "type": "string", "maxLength": 128 },
+        "workflowType": { "type": "string", "enum": ["CSC_FORM_6", "WELLNESS_W01", "WELLNESS_W02", "SYSTEM_TEST"] },
+        "workflowStage": { "type": "string", "enum": ["stage_1_submitted", "stage_2_supervisor_approved", "stage_2_supervisor_disapproved", "stage_3_mayor_approved", "stage_3_mayor_disapproved", "stage_5_hr_finalized", "stage_5_hr_returned", "test_dispatch"] },
+        "applicantName": { "type": "string", "maxLength": 120 },
+        "recipientEmail": { "type": "string", "format": "email", "maxLength": 160 },
+        "recipientRole": { "type": "string", "enum": ["supervisor", "mayor", "hr_final_reviewer", "employee", "test"] },
+        "recipientName": { "type": "string", "maxLength": 120 },
+        "subject": { "type": "string", "maxLength": 240 },
+        "bodyPreview": { "type": "string", "maxLength": 1000 },
+        "provider": { "type": "string", "enum": ["sendgrid", "mailgun", "none"] },
+        "providerMessageId": { "type": "string", "maxLength": 200 },
+        "httpStatusCode": { "type": "number" },
+        "status": { "type": "string", "enum": ["sent", "failed", "unconfigured", "skipped"] },
+        "errorMessage": { "type": "string", "maxLength": 500 },
+        "triggeredByUid": { "type": "string", "maxLength": 128 },
+        "triggeredByName": { "type": "string", "maxLength": 120 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "leaveApplicationId", "workflowType", "workflowStage", "recipientEmail", "recipientRole", "subject", "provider", "status", "triggeredByUid", "createdAt"]
+    },
+    "SystemSettings": {
+      "title": "SystemSettings",
+      "description": "Municipal HRMIS configuration including leave approval routing emails",
+      "type": "object",
+      "properties": {
+        "systemName": { "type": "string", "maxLength": 150 },
+        "lguName": { "type": "string", "maxLength": 150 },
+        "provinceName": { "type": "string", "maxLength": 150 },
+        "currentTermYear": { "type": "number" },
+        "headOfAgency": { "type": "string", "maxLength": 150 },
+        "hrmoHead": { "type": "string", "maxLength": 150 },
+        "essSelfRegistrationEnabled": { "type": "boolean" },
+        "maintenanceMode": { "type": "boolean" },
+        "supervisorEmail": { "type": "string", "format": "email", "maxLength": 160 },
+        "mayorEmail": { "type": "string", "format": "email", "maxLength": 160 },
+        "hrFinalReviewerEmail": { "type": "string", "format": "email", "maxLength": 160 },
+        "emailNotificationsEnabled": { "type": "boolean" },
+        "updatedByUid": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["supervisorEmail", "mayorEmail", "hrFinalReviewerEmail", "emailNotificationsEnabled", "updatedAt"]
     }
   },
   "firestore": {
@@ -291,6 +339,14 @@
     "/auditLogs/{logId}": {
       "schema": "AuditLog",
       "description": "System security and operational audit trail"
+    },
+    "/emailLogs/{logId}": {
+      "schema": "EmailLog",
+      "description": "Transactional email delivery log for automated leave approval workflows"
+    },
+    "/systemSettings/{settingId}": {
+      "schema": "SystemSettings",
+      "description": "System settings and leave approval approver email configuration"
     }
   }
 }

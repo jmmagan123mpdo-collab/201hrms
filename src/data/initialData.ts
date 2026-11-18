@@ -20,6 +20,12 @@ export const INITIAL_SETTINGS: SystemSettings = {
   hrmoHead: 'Atty. Maria Elena Castillo, MHRMO Head',
   essSelfRegistrationEnabled: true,
   maintenanceMode: false,
+  leaveWorkflowRouting: {
+    supervisorEmail: 'jmmagan123mpdo@gmail.com',
+    mayorEmail: 'juanmig488@gmail.com',
+    hrFinalReviewerEmail: 'admin@sanjose.gov.ph',
+    emailNotificationsEnabled: true
+  },
   brandColors: {
     primaryBlue: '#173B67',
     softBlue: '#DCEBFA',

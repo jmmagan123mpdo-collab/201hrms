@@ -2,8 +2,24 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isVerifiedEmail() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdmin() {
+      return isVerifiedEmail() && request.auth.token.email == 'jmmagan123mpdo@gmail.com';
     }
 
     function isOwner(userId) {
@@ -17,16 +33,16 @@ service cloud.firestore {
 
     function isHRAdmin() {
       return isSignedIn() && (
+        isBootstrappedAdmin() ||
         getUserData().role == 'hr_admin' || 
-        getUserData().role == 'developer' ||
-        request.auth.token.email == 'jmmagan123mpdo@gmail.com'
+        getUserData().role == 'developer'
       );
     }
 
     function isDeveloper() {
       return isSignedIn() && (
-        getUserData().role == 'developer' ||
-        request.auth.token.email == 'jmmagan123mpdo@gmail.com'
+        isBootstrappedAdmin() ||
+        getUserData().role == 'developer'
       );
     }
 
@@ -42,6 +58,68 @@ service cloud.firestore {
         getUserData().role == 'payroll' ||
         isHRAdmin()
       );
+    }
+
+    function isValidEmailLog(data) {
+      return data.keys().hasAll([
+          'id', 'leaveApplicationId', 'workflowType', 'workflowStage',
+          'recipientEmail', 'recipientRole', 'subject', 'provider',
+          'status', 'triggeredByUid', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'leaveApplicationId', 'workflowType', 'workflowStage',
+          'applicantName', 'recipientEmail', 'recipientRole', 'recipientName',
+          'subject', 'bodyPreview', 'provider', 'providerMessageId',
+          'httpStatusCode', 'status', 'errorMessage', 'triggeredByUid',
+          'triggeredByName', 'createdAt'
+        ])
+        && isValidId(data.id)
+        && data.leaveApplicationId is string && data.leaveApplicationId.size() > 0 && data.leaveApplicationId.size() <= 128
+        && data.workflowType in ['CSC_FORM_6', 'WELLNESS_W01', 'WELLNESS_W02', 'SYSTEM_TEST']
+        && data.workflowStage in [
+          'stage_1_submitted', 'stage_2_supervisor_approved', 'stage_2_supervisor_disapproved',
+          'stage_3_mayor_approved', 'stage_3_mayor_disapproved', 'stage_5_hr_finalized',
+          'stage_5_hr_returned', 'test_dispatch'
+        ]
+        && data.recipientEmail is string && data.recipientEmail.size() >= 3 && data.recipientEmail.size() <= 160
+        && data.recipientRole in ['supervisor', 'mayor', 'hr_final_reviewer', 'employee', 'test']
+        && data.subject is string && data.subject.size() > 0 && data.subject.size() <= 240
+        && data.provider in ['sendgrid', 'mailgun', 'none']
+        && data.status in ['sent', 'failed', 'unconfigured', 'skipped']
+        && data.triggeredByUid is string && data.triggeredByUid.size() > 0 && data.triggeredByUid.size() <= 128 && data.triggeredByUid == request.auth.uid
+        && data.createdAt == request.time
+        && (!('applicantName' in data) || (data.applicantName is string && data.applicantName.size() <= 120))
+        && (!('recipientName' in data) || (data.recipientName is string && data.recipientName.size() <= 120))
+        && (!('bodyPreview' in data) || (data.bodyPreview is string && data.bodyPreview.size() <= 1000))
+        && (!('providerMessageId' in data) || (data.providerMessageId is string && data.providerMessageId.size() <= 200))
+        && (!('httpStatusCode' in data) || data.httpStatusCode is number)
+        && (!('errorMessage' in data) || (data.errorMessage is string && data.errorMessage.size() <= 500))
+        && (!('triggeredByName' in data) || (data.triggeredByName is string && data.triggeredByName.size() <= 120));
+    }
+
+    function isValidSystemSettings(data) {
+      return data.keys().hasAll([
+          'supervisorEmail', 'mayorEmail', 'hrFinalReviewerEmail', 'emailNotificationsEnabled', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'systemName', 'lguName', 'provinceName', 'currentTermYear', 'headOfAgency', 'hrmoHead',
+          'essSelfRegistrationEnabled', 'maintenanceMode', 'supervisorEmail', 'mayorEmail',
+          'hrFinalReviewerEmail', 'emailNotificationsEnabled', 'updatedByUid', 'updatedAt'
+        ])
+        && data.supervisorEmail is string && data.supervisorEmail.size() >= 3 && data.supervisorEmail.size() <= 160
+        && data.mayorEmail is string && data.mayorEmail.size() >= 3 && data.mayorEmail.size() <= 160
+        && data.hrFinalReviewerEmail is string && data.hrFinalReviewerEmail.size() >= 3 && data.hrFinalReviewerEmail.size() <= 160
+        && data.emailNotificationsEnabled is bool
+        && data.updatedAt == request.time
+        && (!('systemName' in data) || (data.systemName is string && data.systemName.size() <= 150))
+        && (!('lguName' in data) || (data.lguName is string && data.lguName.size() <= 150))
+        && (!('provinceName' in data) || (data.provinceName is string && data.provinceName.size() <= 150))
+        && (!('currentTermYear' in data) || data.currentTermYear is number)
+        && (!('headOfAgency' in data) || (data.headOfAgency is string && data.headOfAgency.size() <= 150))
+        && (!('hrmoHead' in data) || (data.hrmoHead is string && data.hrmoHead.size() <= 150))
+        && (!('essSelfRegistrationEnabled' in data) || data.essSelfRegistrationEnabled is bool)
+        && (!('maintenanceMode' in data) || data.maintenanceMode is bool)
+        && (!('updatedByUid' in data) || (data.updatedByUid is string && data.updatedByUid.size() <= 128 && data.updatedByUid == request.auth.uid));
     }
 
     // Fallback deny-all
@@ -151,10 +229,20 @@ service cloud.firestore {
       allow update, delete: if false; // Immutable audit records
     }
 
-    // System Settings & Configuration
+    // Transactional Email Logs (Immutable Audit Trail)
+    match /emailLogs/{logId} {
+      allow get: if isSignedIn() && isValidId(logId) && (isHRStaff() || resource.data.triggeredByUid == request.auth.uid);
+      allow list: if isSignedIn() && (isBootstrappedAdmin() || resource.data.triggeredByUid == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(logId) && isValidEmailLog(incoming());
+      allow update, delete: if false;
+    }
+
+    // System Settings & Workflow Approver Configuration
     match /systemSettings/{settingId} {
-      allow read: if isSignedIn();
-      allow write: if isDeveloper() || isHRAdmin();
+      allow get: if isSignedIn() && isValidId(settingId);
+      allow list: if isBootstrappedAdmin();
+      allow create, update: if isSignedIn() && isValidId(settingId) && (isDeveloper() || isHRAdmin()) && isValidSystemSettings(incoming());
+      allow delete: if false;
     }
   }
 }
