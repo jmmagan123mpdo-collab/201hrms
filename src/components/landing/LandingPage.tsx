@@ -32,7 +32,7 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
           <div className="flex items-center space-x-3.5">
             <img 
-              src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
+              src="/assets/aistudio/logo-300x293_45c24a73.png" 
               alt="Seal of the Municipality of San Jose, Occidental Mindoro" 
               className="w-13 h-13 object-contain drop-shadow-xs"
             />
@@ -53,7 +53,7 @@ export const LandingPage: React.FC = () => {
             <PWAInstallButton variant="header" />
             <div className="hidden md:flex items-center">
               <img 
-                src="/public/assets/aistudio/HR1_5214d096.png" 
+                src="/assets/aistudio/HR1_5214d096.png" 
                 alt="MHRMO Official Logo" 
                 className="h-10 w-auto object-contain"
               />

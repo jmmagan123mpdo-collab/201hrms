@@ -85,7 +85,7 @@ export const CertificatePreviewModal: React.FC<CertificatePreviewModalProps> = (
           {/* Subtle Watermark Seal */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04]">
             <img 
-              src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
+              src="/assets/aistudio/logo-300x293_45c24a73.png" 
               alt="LGU Seal Watermark" 
               className="w-96 h-96 object-contain"
             />
@@ -95,7 +95,7 @@ export const CertificatePreviewModal: React.FC<CertificatePreviewModalProps> = (
           <div className="border-b-2 border-slate-900 pb-4 mb-6">
             <div className="flex items-center justify-between">
               <img 
-                src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
+                src="/assets/aistudio/logo-300x293_45c24a73.png" 
                 alt="San Jose Seal" 
                 className="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0"
               />
@@ -117,7 +117,7 @@ export const CertificatePreviewModal: React.FC<CertificatePreviewModalProps> = (
                 </div>
               </div>
               <img 
-                src="/public/assets/aistudio/HR1_5214d096.png" 
+                src="/assets/aistudio/HR1_5214d096.png" 
                 alt="MHRMO Logo" 
                 className="h-10 sm:h-12 w-auto object-contain shrink-0"
               />

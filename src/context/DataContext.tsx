@@ -164,11 +164,7 @@ function parseTimestamp(val: unknown): string {
 }
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // One-time clean start: remove legacy demo/sample records stored by earlier builds.
-  if (!localStorage.getItem('sjhr201_clean_start_v1')) {
-    Object.keys(localStorage).filter(key => key.startsWith('sjhr201_')).forEach(key => localStorage.removeItem(key));
-    localStorage.setItem('sjhr201_clean_start_v1', 'true');
-  }
+  // Preserve existing browser-side SJHR201 cache. Never clear user data automatically.
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(false);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [firestoreSyncError, setFirestoreSyncError] = useState<string | null>(null);

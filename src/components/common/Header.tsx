@@ -517,12 +517,12 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setActivePortal(currentUser?.role === 'employee' ? 'ess' : 'hr')}
             >
               <img 
-                src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
+                src="/assets/aistudio/logo-300x293_45c24a73.png" 
                 alt="San Jose Municipal Seal" 
                 className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-xs"
               />
               <img 
-                src="/public/assets/aistudio/HR1_5214d096.png" 
+                src="/assets/aistudio/HR1_5214d096.png" 
                 alt="MHRMO Logo" 
                 className="h-7 sm:h-8 w-auto object-contain hidden lg:block"
               />

@@ -60,7 +60,7 @@ export const HRLoginModal: React.FC<HRLoginModalProps> = ({ isOpen, onClose }) =
 
           <div className="flex items-center space-x-3">
             <img 
-              src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
+              src="/assets/aistudio/logo-300x293_45c24a73.png" 
               alt="San Jose Seal" 
               className="w-11 h-11 sm:w-12 sm:h-12 object-contain bg-white rounded-full p-1"
             />
@@ -104,7 +104,7 @@ export const HRLoginModal: React.FC<HRLoginModalProps> = ({ isOpen, onClose }) =
               {/* Username Input */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Username or Official Email
+                  HR-verified Official Email
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
