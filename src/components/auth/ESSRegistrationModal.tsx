@@ -110,7 +110,7 @@ export const ESSRegistrationModal: React.FC<ESSRegistrationModalProps> = ({ isOp
 
           <div className="flex items-center space-x-3">
             <img 
-              src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
+              src="/assets/aistudio/logo-300x293_45c24a73.png" 
               alt="San Jose Seal" 
               className="w-11 h-11 sm:w-12 sm:h-12 object-contain bg-white rounded-full p-1"
             />

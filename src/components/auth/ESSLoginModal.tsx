@@ -5,10 +5,9 @@ import { Lock, Mail, Eye, EyeOff, ShieldAlert, ArrowRight, X, HelpCircle } from 
 interface ESSLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenRegister: () => void;
 }
 
-export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, onOpenRegister }) => {
+export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose }) => {
   const { loginESS } = useAuth();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -39,6 +38,8 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
     }
   };
 
+
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
       <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full border border-orange-100 overflow-hidden max-h-[94vh] flex flex-col">
@@ -60,7 +61,7 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
 
           <div className="flex items-center space-x-3">
             <img 
-              src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
+              src="/assets/aistudio/logo-300x293_45c24a73.png" 
               alt="San Jose Seal" 
               className="w-11 h-11 sm:w-12 sm:h-12 object-contain bg-white rounded-full p-1"
             />
@@ -178,7 +179,6 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
                 <span>{isLoading ? 'Signing In...' : 'Sign In to ESS'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-
 
 
             </form>
