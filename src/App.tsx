@@ -10,7 +10,6 @@ import { Header } from './components/common/Header.tsx';
 import { LandingPage } from './components/landing/LandingPage.tsx';
 import { Sidebar, HRTab } from './components/hr/Sidebar.tsx';
 import { HRDashboard } from './components/hr/HRDashboard.tsx';
-import { RoleDashboard } from './components/hr/RoleDashboard.tsx';
 import { EmployeeMasterlist } from './components/hr/EmployeeMasterlist.tsx';
 import { EmployeeProfileModal } from './components/hr/EmployeeProfileModal.tsx';
 import { DocumentManager } from './components/hr/DocumentManager.tsx';
@@ -164,11 +163,7 @@ const MainApp: React.FC = () => {
         <main className="flex-1 p-3.5 sm:p-6 overflow-y-auto max-h-[calc(100vh-3.5rem)] sm:max-h-[calc(100vh-4rem)] pb-24 md:pb-6">
           <div className="max-w-7xl mx-auto">
             
-            {activeHRTab === 'dashboard' && currentUser && !['developer', 'hr_admin'].includes(currentUser.role) && (
-              <RoleDashboard onNavigate={setActiveHRTab} />
-            )}
-
-            {activeHRTab === 'dashboard' && (!currentUser || ['developer', 'hr_admin'].includes(currentUser.role)) && (
+            {activeHRTab === 'dashboard' && (
               <HRDashboard
                 onNavigate={setActiveHRTab}
                 onOpenAddEmployee={() => setShowAddEmployee(true)}

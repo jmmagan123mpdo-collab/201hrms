@@ -1,269 +1,126 @@
 import React, { useState } from 'react';
+import { Building2, UserRound, ShieldCheck, ArrowRight, LockKeyhole, X, AlertCircle } from 'lucide-react';
 import { HRLoginModal } from '../auth/HRLoginModal.tsx';
 import { ESSLoginModal } from '../auth/ESSLoginModal.tsx';
-import { ESSRegistrationModal } from '../auth/ESSRegistrationModal.tsx';
-import { 
-  Building2, 
-  Users, 
-  FileText, 
-  ShieldCheck, 
-  Calendar, 
-  Clock, 
-  Award, 
-  ArrowRight, 
-  ChevronRight,
-  Sparkles,
-  Lock,
-  Smartphone,
-  Download
-} from 'lucide-react';
 import { PWAInstallButton } from '../common/PWAInstallButton.tsx';
 
 export const LandingPage: React.FC = () => {
+  const [showPersonnelGate, setShowPersonnelGate] = useState(false);
   const [showHRLogin, setShowHRLogin] = useState(false);
   const [showESSLogin, setShowESSLogin] = useState(false);
-  const [showESSRegister, setShowESSRegister] = useState(false);
+  const [accessKey, setAccessKey] = useState('');
+  const [gateError, setGateError] = useState('');
+  const [checkingKey, setCheckingKey] = useState(false);
+
+  const verifyPersonnelAccess = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setGateError('');
+    setCheckingKey(true);
+    try {
+      const response = await fetch('/api/personnel-access/verify', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessKey })
+      });
+      const result = await response.json();
+      if (!response.ok || !result?.authorized) {
+        setGateError(result?.error || 'Access key is invalid or personnel access is not configured.');
+        return;
+      }
+      setShowPersonnelGate(false);
+      setAccessKey('');
+      setShowHRLogin(true);
+    } catch {
+      setGateError('Personnel access verification is unavailable. Please contact the system administrator.');
+    } finally {
+      setCheckingKey(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      
-      {/* Top Municipal Banner Header */}
-      <header className="bg-white border-b border-slate-200 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-          <div className="flex items-center space-x-3.5">
-            <img 
-              src="/assets/aistudio/logo-300x293_45c24a73.png" 
-              alt="Seal of the Municipality of San Jose, Occidental Mindoro" 
-              className="w-13 h-13 object-contain drop-shadow-xs"
-            />
-            <div>
-              <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                Republic of the Philippines • Province of Occidental Mindoro
-              </div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-[#173B67] tracking-tight">
-                MUNICIPALITY OF SAN JOSE
-              </h1>
-              <div className="text-xs font-semibold text-slate-600 flex items-center space-x-1.5">
-                <span>Municipal Human Resource Management Office (MHRMO)</span>
-              </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
+      <header className="bg-[#173B67] text-white border-b border-[#102d4f]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <img src="/assets/aistudio/logo-300x293_45c24a73.png" alt="Municipality of San Jose seal" className="w-12 h-12 object-contain bg-white rounded-full p-0.5" />
+            <div className="min-w-0">
+              <div className="text-[10px] sm:text-xs uppercase tracking-wide text-blue-100">Municipality of San Jose • Occidental Mindoro</div>
+              <div className="font-bold text-base sm:text-lg leading-tight">SJHR201 <span className="text-orange-400">HRMIS</span></div>
             </div>
           </div>
-
-          <div className="flex items-center space-x-3">
-            <PWAInstallButton variant="header" />
-            <div className="hidden md:flex items-center">
-              <img 
-                src="/assets/aistudio/HR1_5214d096.png" 
-                alt="MHRMO Official Logo" 
-                className="h-10 w-auto object-contain"
-              />
-            </div>
-          </div>
+          <PWAInstallButton variant="header" />
         </div>
       </header>
 
-      {/* Hero Section with Official Title and Portals */}
-      <main className="flex-1 flex flex-col justify-center max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 w-full">
-        
-        {/* System Title Banner */}
-        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#173B67] text-xs font-bold tracking-wide uppercase mb-3">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-700" />
-            <span>Official LGU Personnel Information System</span>
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 flex flex-col justify-center">
+        <section className="text-center max-w-3xl mx-auto mb-9 sm:mb-11">
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-[#173B67] mb-4">
+            <ShieldCheck className="w-3.5 h-3.5" /> Official LGU Personnel Information System
           </div>
-          
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            SJHR201 – Human Resource Management System
-          </h2>
-          
-          <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
-            Centralized 201 Personnel Records, Two-Way Digital Document Management, Leave & Wellness Applications, and Employee Self-Service for the Local Government Unit of San Jose.
-          </p>
-        </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#173B67]">Human Resource Management System</h1>
+          <p className="mt-3 text-sm sm:text-base text-slate-600">LGU San Jose • Centralized personnel records and employee services</p>
+        </section>
 
-        {/* The Two Approved Portals - Side-by-Side Tiles on Mobile and Desktop */}
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-8 max-w-4xl mx-auto w-full">
-          
-          {/* Portal 1: HR MANAGEMENT (Approved Soft Blue Theme) */}
-          <div className="bg-white rounded-2xl border-2 border-slate-200/90 shadow-sm sm:shadow-lg hover:shadow-xl hover:border-[#173B67] transition-all p-3.5 sm:p-8 flex flex-col justify-between relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-20 sm:w-32 h-20 sm:h-32 bg-[#DCEBFA]/40 rounded-full blur-2xl -mr-6 sm:-mr-10 -mt-6 sm:-mt-10 pointer-events-none"></div>
-
-            <div>
-              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#173B67] text-white flex items-center justify-center shadow-md mb-3 sm:mb-5 group-hover:scale-105 transition-transform">
-                <Building2 className="w-5 h-5 sm:w-7 sm:h-7" />
-              </div>
-
-              <div className="inline-block px-2 py-0.5 rounded-full text-[9px] sm:text-[11px] font-bold uppercase tracking-wider bg-blue-100 text-[#173B67] mb-1.5 sm:mb-2">
-                <span className="hidden sm:inline">Administrative Portal</span>
-                <span className="sm:hidden">Admin Portal</span>
-              </div>
-
-              <h3 className="text-sm sm:text-2xl font-black sm:font-bold text-slate-900 tracking-tight leading-tight">
-                HR MANAGEMENT
-              </h3>
-
-              <p className="mt-1 sm:mt-2 text-[10px] sm:text-sm text-slate-600 leading-snug sm:leading-relaxed">
-                <span className="hidden sm:inline">Dedicated workspace for the HR Administrator, HR Staff (Officers/Encoders), Payroll Personnel, and System Developer.</span>
-                <span className="sm:hidden">For HR Admins, Staff Officers, Payroll, and System Developer.</span>
-              </p>
-
-              {/* Feature Highlights */}
-              <ul className="mt-2.5 sm:mt-5 space-y-1 sm:space-y-2 text-[10px] sm:text-xs text-slate-600 font-medium">
-                <li className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#173B67] shrink-0"></span>
-                  <span className="truncate">Employee Masterlist</span>
-                </li>
-                <li className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#173B67] shrink-0"></span>
-                  <span className="truncate">15-Category 201 Files</span>
-                </li>
-                <li className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#173B67] shrink-0"></span>
-                  <span className="truncate">Requests & Approvals</span>
-                </li>
-                <li className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#173B67] shrink-0"></span>
-                  <span className="truncate">Leave & Wellness Forms</span>
-                </li>
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-7 max-w-5xl mx-auto w-full">
+          <article className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div className="bg-[#173B67] text-white p-5 sm:p-6 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center"><Building2 className="w-7 h-7" /></div>
+              <div><h2 className="font-bold text-lg sm:text-xl">Authorized Personnel</h2><p className="text-xs sm:text-sm text-blue-100">HR and LGU officials</p></div>
+            </div>
+            <div className="p-5 sm:p-6 flex-1 flex flex-col">
+              <p className="text-sm text-slate-600">Restricted access for authorized system personnel.</p>
+              <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                {['HR Administrator and HR Staff','Payroll Officer and System Developer','Mayor, Department Heads and Division Heads'].map(x => <li key={x} className="flex gap-2"><span className="text-[#173B67] font-bold">✓</span>{x}</li>)}
               </ul>
-            </div>
-
-            <div className="mt-3.5 sm:mt-8 pt-3 sm:pt-4 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowHRLogin(true)}
-                className="w-full py-2.5 sm:py-3 px-2 sm:px-5 bg-[#173B67] hover:bg-[#122e50] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center justify-center space-x-1 sm:space-x-2 group-hover:translate-x-0.5 cursor-pointer text-center"
-              >
-                <span className="hidden sm:inline">Enter HR Management</span>
-                <span className="sm:hidden">Enter HR</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <button onClick={() => { setGateError(''); setShowPersonnelGate(true); }} className="mt-6 w-full rounded-lg bg-[#173B67] hover:bg-[#102d4f] text-white font-semibold text-sm py-3 px-4 flex items-center justify-center gap-2">
+                <LockKeyhole className="w-4 h-4" /> Authorized Personnel Access <ArrowRight className="w-4 h-4" />
               </button>
-              <p className="text-[9px] sm:text-[11px] text-center text-slate-400 mt-1.5 sm:mt-2">
-                <span className="hidden sm:inline">Developer signs in through HR Management</span>
-                <span className="sm:hidden">Developer & HR access</span>
-              </p>
+              <p className="text-[11px] text-center text-slate-400 mt-2">Personnel access key and individual account login required</p>
             </div>
-          </div>
+          </article>
 
-          {/* Portal 2: EMPLOYEE SELF-SERVICE (Approved Orange Theme) */}
-          <div className="bg-white rounded-2xl border-2 border-slate-200/90 shadow-sm sm:shadow-lg hover:shadow-xl hover:border-[#F28C28] transition-all p-3.5 sm:p-8 flex flex-col justify-between relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-20 sm:w-32 h-20 sm:h-32 bg-orange-100/50 rounded-full blur-2xl -mr-6 sm:-mr-10 -mt-6 sm:-mt-10 pointer-events-none"></div>
-
-            <div>
-              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#F28C28] text-white flex items-center justify-center shadow-md mb-3 sm:mb-5 group-hover:scale-105 transition-transform">
-                <Users className="w-5 h-5 sm:w-7 sm:h-7" />
-              </div>
-
-              <div className="inline-block px-2 py-0.5 rounded-full text-[9px] sm:text-[11px] font-bold uppercase tracking-wider bg-orange-100 text-[#F28C28] mb-1.5 sm:mb-2">
-                <span className="hidden sm:inline">Personnel Portal</span>
-                <span className="sm:hidden">Staff Portal</span>
-              </div>
-
-              <h3 className="text-sm sm:text-2xl font-black sm:font-bold text-slate-900 tracking-tight leading-tight">
-                EMPLOYEE SELF-SERVICE
-              </h3>
-
-              <p className="mt-1 sm:mt-2 text-[10px] sm:text-sm text-slate-600 leading-snug sm:leading-relaxed">
-                <span className="hidden sm:inline">Direct self-service portal for municipal employees across all classifications (Permanent, Casual, JO, COS, Elective).</span>
-                <span className="sm:hidden">For all municipal staff (Permanent, Casual, JO, COS, Elective).</span>
-              </p>
-
-              {/* Feature Highlights */}
-              <ul className="mt-2.5 sm:mt-5 space-y-1 sm:space-y-2 text-[10px] sm:text-xs text-slate-600 font-medium">
-                <li className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F28C28] shrink-0"></span>
-                  <span className="truncate">Personal 201 Files</span>
-                </li>
-                <li className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F28C28] shrink-0"></span>
-                  <span className="truncate">Camera Doc Scanner</span>
-                </li>
-                <li className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F28C28] shrink-0"></span>
-                  <span className="truncate">Respond to HR Requests</span>
-                </li>
-                <li className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F28C28] shrink-0"></span>
-                  <span className="truncate">File Leave & Wellness</span>
-                </li>
+          <article className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div className="bg-[#F28C28] text-white p-5 sm:p-6 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-white/15 flex items-center justify-center"><UserRound className="w-7 h-7" /></div>
+              <div><h2 className="font-bold text-lg sm:text-xl">Employee Self-Service</h2><p className="text-xs sm:text-sm text-orange-50">For LGU San Jose employees</p></div>
+            </div>
+            <div className="p-5 sm:p-6 flex-1 flex flex-col">
+              <p className="text-sm text-slate-600">Securely access your own HR information and employee services.</p>
+              <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                {['View personal information and 201 files','Submit leave and document requests','Access payslips and performance records'].map(x => <li key={x} className="flex gap-2"><span className="text-[#F28C28] font-bold">✓</span>{x}</li>)}
               </ul>
-            </div>
-
-            <div className="mt-3.5 sm:mt-8 pt-3 sm:pt-4 border-t border-slate-100 space-y-1.5 sm:space-y-2">
-              <button
-                type="button"
-                onClick={() => setShowESSLogin(true)}
-                className="w-full py-2.5 sm:py-3 px-2 sm:px-5 bg-[#F28C28] hover:bg-[#d9771a] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center justify-center space-x-1 sm:space-x-2 group-hover:translate-x-0.5 cursor-pointer text-center"
-              >
-                <span className="hidden sm:inline">Enter Employee Self-Service</span>
-                <span className="sm:hidden">Enter ESS</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <button onClick={() => setShowESSLogin(true)} className="mt-6 w-full rounded-lg bg-[#F28C28] hover:bg-[#dc7617] text-white font-semibold text-sm py-3 px-4 flex items-center justify-center gap-2">
+                Employee Sign In <ArrowRight className="w-4 h-4" />
               </button>
-
-              <button
-                type="button"
-                onClick={() => setShowESSRegister(true)}
-                className="w-full py-1.5 sm:py-2 px-1 sm:px-4 bg-orange-50 hover:bg-orange-100 text-[#F28C28] font-bold text-[10px] sm:text-xs rounded-xl border border-orange-200 transition-colors flex items-center justify-center space-x-1 cursor-pointer text-center"
-              >
-                <span className="hidden sm:inline">First time? Register an ESS Account</span>
-                <span className="sm:hidden">Register Account</span>
-                <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-              </button>
+              <p className="text-[11px] text-center text-slate-400 mt-2">Accounts are provisioned or verified by HR. Public registration is disabled.</p>
             </div>
-          </div>
+          </article>
+        </section>
 
-        </div>
-
-        {/* PWA Mobile & Desktop Install Action Card */}
-        <div className="mt-8 max-w-4xl mx-auto w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all hover:border-blue-300">
-          <div className="flex items-center space-x-3.5 text-center sm:text-left w-full sm:w-auto">
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-[#173B67] to-[#1e4e89] text-white flex items-center justify-center shrink-0 shadow-sm mx-auto sm:mx-0">
-              <Smartphone className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300" />
-            </div>
-            <div>
-              <div className="flex items-center justify-center sm:justify-start space-x-2">
-                <h4 className="text-sm sm:text-base font-bold text-slate-900">
-                  Install SJHR201 on Your Device
-                </h4>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#173B67] border border-blue-200">
-                  PWA
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Install as a standalone application on Android, iPhone, Windows, or Mac for fast 1-tap access.
-              </p>
-            </div>
-          </div>
-          <div className="shrink-0 w-full sm:w-auto flex justify-center sm:justify-end">
-            <PWAInstallButton variant="hero" />
-          </div>
-        </div>
-
-        {/* Government Footer Notice */}
-        <div className="mt-14 pt-8 border-t border-slate-200 text-center text-xs text-slate-500">
-          <p className="font-semibold text-slate-700">
-            Municipality of San Jose • Occidental Mindoro, Philippines
-          </p>
-          <p className="mt-1 text-[11px] text-slate-400">
-            Compliant with Civil Service Commission (CSC) Guidelines, DILG Directives, and Data Privacy Act of 2012 (RA 10173).
-          </p>
-        </div>
-
+        <section className="mt-7 max-w-5xl mx-auto w-full bg-white border border-slate-200 rounded-xl p-4 sm:px-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div><h3 className="font-semibold text-sm">Install SJHR201 on your device</h3><p className="text-xs text-slate-500 mt-0.5">Use the app on supported desktop and mobile devices.</p></div>
+          <PWAInstallButton variant="hero" />
+        </section>
       </main>
 
-      {/* Modals */}
-      <HRLoginModal isOpen={showHRLogin} onClose={() => setShowHRLogin(false)} />
-      <ESSLoginModal 
-        isOpen={showESSLogin} 
-        onClose={() => setShowESSLogin(false)} 
-        onOpenRegister={() => setShowESSRegister(true)} 
-      />
-      <ESSRegistrationModal 
-        isOpen={showESSRegister} 
-        onClose={() => setShowESSRegister(false)} 
-        onOpenLogin={() => setShowESSLogin(true)} 
-      />
+      <footer className="bg-[#173B67] text-white px-4 py-4 text-center text-xs">
+        Municipality of San Jose • Occidental Mindoro, Philippines <span className="text-blue-200">| SJHR201 HRMIS</span>
+      </footer>
 
+      {showPersonnelGate && <div className="fixed inset-0 z-[100] bg-slate-950/60 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="personnel-gate-title">
+        <form onSubmit={verifyPersonnelAccess} className="w-full max-w-md bg-white rounded-xl shadow-2xl p-6 relative">
+          <button type="button" onClick={() => setShowPersonnelGate(false)} className="absolute right-4 top-4 text-slate-400 hover:text-slate-700" aria-label="Close"><X className="w-5 h-5" /></button>
+          <div className="w-11 h-11 rounded-lg bg-blue-50 text-[#173B67] flex items-center justify-center mb-4"><LockKeyhole className="w-6 h-6" /></div>
+          <h2 id="personnel-gate-title" className="text-xl font-bold text-[#173B67]">Authorized Personnel Access</h2>
+          <p className="text-sm text-slate-500 mt-1">Enter the personnel access key to continue to individual account sign-in.</p>
+          <label className="block text-xs font-semibold text-slate-700 mt-5 mb-1.5" htmlFor="personnel-key">Personnel Access Key</label>
+          <input id="personnel-key" type="password" autoComplete="current-password" value={accessKey} onChange={e => setAccessKey(e.target.value)} className="w-full border border-slate-300 rounded-lg px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#173B67]" placeholder="Enter access key" required />
+          {gateError && <div className="mt-3 flex gap-2 text-xs text-red-700 bg-red-50 rounded-lg p-3"><AlertCircle className="w-4 h-4 shrink-0" />{gateError}</div>}
+          <button disabled={checkingKey || !accessKey.trim()} className="mt-5 w-full bg-[#173B67] disabled:opacity-50 text-white rounded-lg py-3 font-semibold text-sm">{checkingKey ? 'Verifying…' : 'Continue to Personnel Login'}</button>
+        </form>
+      </div>}
+
+      <HRLoginModal isOpen={showHRLogin} onClose={() => setShowHRLogin(false)} />
+      <ESSLoginModal isOpen={showESSLogin} onClose={() => setShowESSLogin(false)} onOpenRegister={() => {}} />
     </div>
   );
 };

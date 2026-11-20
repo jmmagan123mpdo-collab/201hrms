@@ -64,12 +64,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { currentUser } = useAuth();
   const isDeveloper = currentUser?.role === 'developer';
   const isHRAdmin = currentUser?.role === 'hr_admin' || isDeveloper;
-  const isMayor = currentUser?.role === 'mayor';
-  const isDepartmentHead = currentUser?.role === 'department_head';
-  const isDivisionHead = currentUser?.role === 'division_head';
-  const isSupervisor = isMayor || isDepartmentHead || isDivisionHead;
-  const isPayroll = currentUser?.role === 'payroll';
-  const isEncoder = currentUser?.role === 'hr_staff';
 
   const handleSelect = (tab: HRTab) => {
     onSelectTab(tab);
@@ -128,46 +122,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       <div className="p-3 space-y-0.5 overflow-y-auto max-h-[calc(100vh-8rem)] scrollbar-thin scrollbar-thumb-white/20">
         
-        {isSupervisor ? (
-          <>
-            <SectionHeader title={isMayor ? 'EXECUTIVE' : isDepartmentHead ? 'DEPARTMENT' : 'DIVISION'} />
-            <NavItem tab="dashboard" number={1} label="Dashboard" icon={LayoutDashboard} />
-            {isDepartmentHead && <NavItem tab="masterlist" number={2} label="Department Personnel" icon={Users} />}
-            {isDivisionHead && <NavItem tab="masterlist" number={2} label="Division Personnel" icon={Users} />}
-            {isDepartmentHead && <NavItem tab="offices" number={3} label="Division Overview" icon={Building2} />}
-            <NavItem tab="leave" number={4} label="Assigned Leave Reviews" icon={FileClock} badge={totalLeaveBadge} />
-            <NavItem tab="performance" number={5} label="IPCR Review" icon={TrendingUp} />
-            <NavItem tab="reports" number={6} label="Reports" icon={FileSpreadsheet} />
-            <NavItem tab="notifications" number={7} label="Notifications" icon={Bell} badge={unreadNotificationsCount} />
-          </>
-        ) : isPayroll ? (
-          <>
-            <SectionHeader title="PAYROLL" />
-            <NavItem tab="dashboard" number={1} label="Dashboard" icon={LayoutDashboard} />
-            <NavItem tab="payroll" number={2} label="Payroll & Payslips" icon={CreditCard} />
-            <NavItem tab="reports" number={3} label="Payroll Reports" icon={FileSpreadsheet} />
-            <NavItem tab="audit_logs" number={4} label="My Activity" icon={History} />
-          </>
-        ) : (
-          <>
-            <SectionHeader title="CORE MODULES" />
-            <NavItem tab="dashboard" number={1} label="Dashboard" icon={LayoutDashboard} />
-            <NavItem tab="masterlist" number={2} label="Employee Masterlist" icon={Users} />
-            <NavItem tab="201_files" number={3} label="201 Files" icon={FolderLock} />
-            <NavItem tab="leave" number={4} label="Leave Management" icon={FileClock} badge={totalLeaveBadge} />
-            {isHRAdmin && <NavItem tab="saln" number={5} label="SALN Administration" icon={ShieldCheck} />}
-            {isHRAdmin && <NavItem tab="payroll" number={6} label="Payroll Monitoring" icon={CreditCard} />}
-            {isEncoder && <NavItem tab="requests" number={5} label="Assigned Document Requests" icon={FileText} badge={pendingRequestsCount} />}
-            {isHRAdmin && <NavItem tab="travel_orders" number={7} label="Travel Orders" icon={Navigation} />}
-            {isHRAdmin && <NavItem tab="pass_slips" number={8} label="Pass Slips" icon={ClipboardList} />}
-            {isHRAdmin && <NavItem tab="performance" number={9} label="Performance Management" icon={TrendingUp} />}
-            {isHRAdmin && <NavItem tab="offices" number={10} label="Office Directory" icon={Building2} />}
-            {isHRAdmin && <NavItem tab="reports" number={11} label="Reports" icon={FileSpreadsheet} />}
-            {isHRAdmin && <NavItem tab="users" number={12} label="User Management" icon={Users} />}
-            {isHRAdmin && <NavItem tab="audit_logs" number={13} label="Audit Logs" icon={History} />}
-            {isDeveloper && <NavItem tab="developer_control" number={14} label="Developer Control" icon={Sparkles} />}
-            <NavItem tab="notifications" number={15} label="Notifications" icon={Bell} badge={unreadNotificationsCount} />
-          </>
+        {/* CORE RECORDS */}
+        <SectionHeader title="CORE MODULES" />
+        <NavItem tab="dashboard" number={1} label="Dashboard" icon={LayoutDashboard} />
+        <NavItem tab="masterlist" number={2} label="Employee Masterlist" icon={Users} />
+        <NavItem tab="201_files" number={3} label="201 Files" icon={FolderLock} />
+        <NavItem tab="leave" number={4} label="Leave Management" icon={FileClock} badge={totalLeaveBadge} />
+        <NavItem tab="saln" number={5} label="SALN Management" icon={ShieldCheck} />
+        <NavItem tab="payroll" number={6} label="Payroll and Payslips" icon={CreditCard} />
+
+        {/* OPERATIONS & REQUESTS */}
+        <SectionHeader title="OPERATIONS & REQUESTS" />
+        <NavItem tab="overtime" number={7} label="Overtime" icon={History} />
+        <NavItem tab="travel_orders" number={8} label="Travel Orders" icon={Navigation} />
+        <NavItem tab="pass_slips" number={9} label="Pass Slips" icon={ClipboardList} />
+        <NavItem tab="requests" number={10} label="Document Requests" icon={FileText} badge={pendingRequestsCount} />
+        <NavItem tab="training" number={11} label="Training & Dev" icon={Award} />
+        <NavItem tab="performance" number={12} label="Performance (IPCR)" icon={TrendingUp} />
+
+        {/* REGISTRIES & SYSTEM */}
+        <SectionHeader title="REGISTRIES & REPORTS" />
+        <NavItem tab="offices" number={13} label="Office Directory" icon={Building2} />
+        <NavItem tab="reports" number={14} label="Reports" icon={FileSpreadsheet} />
+        {isHRAdmin && <NavItem tab="users" number={15} label="User Management" icon={Users} />}
+        <NavItem tab="notifications" number={16} label="Notifications" icon={Bell} badge={unreadNotificationsCount} />
+        {isHRAdmin && <NavItem tab="audit_logs" number={17} label="Audit Logs" icon={History} />}
+        {(isHRAdmin || isDeveloper) && (
+          <NavItem tab="developer_control" number={18} label="Developer Control" icon={Sparkles} />
         )}
 
       </div>
@@ -175,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Footer Info */}
       <div className="p-3 border-t border-white/10 bg-black/10 text-[11px] text-blue-200">
         <div className="font-semibold text-white">LGU San Jose HRMIS</div>
-        <div className="text-[10px] text-blue-300">Role-based access • Occidental Mindoro</div>
+        <div className="text-[10px] text-blue-300">18 Master Modules • Occidental Mindoro</div>
       </div>
     </>
   );

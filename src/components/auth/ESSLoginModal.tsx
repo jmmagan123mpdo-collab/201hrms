@@ -39,7 +39,6 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
     }
   };
 
-
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
       <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full border border-orange-100 overflow-hidden max-h-[94vh] flex flex-col">
@@ -61,7 +60,7 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
 
           <div className="flex items-center space-x-3">
             <img 
-              src="/assets/aistudio/logo-300x293_45c24a73.png" 
+              src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
               alt="San Jose Seal" 
               className="w-11 h-11 sm:w-12 sm:h-12 object-contain bg-white rounded-full p-1"
             />
@@ -105,7 +104,7 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
               {/* Identifier Input (Email or Username) */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Registered HR-verified Email Address
+                  Registered Email Address or Username
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -114,7 +113,7 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
                     required
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="name@sanjose.gov.ph"
+                    placeholder="e.g. maria.santos@sanjose.gov.ph or msantos"
                     className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#F28C28] focus:border-transparent outline-none transition-all"
                   />
                 </div>
@@ -180,11 +179,8 @@ export const ESSLoginModal: React.FC<ESSLoginModalProps> = ({ isOpen, onClose, o
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              <div className="pt-3 border-t border-slate-100 text-center">
-                <p className="text-xs text-slate-500">
-                  New ESS accounts are created after HR verifies the employee's registered email. Please contact HR for account setup.
-                </p>
-              </div>
+
+
             </form>
           )}
         </div>

@@ -81,7 +81,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
           {/* Subtle Watermark Seal */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
             <img 
-              src="/assets/aistudio/logo-300x293_45c24a73.png" 
+              src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
               alt="LGU Seal Watermark" 
               className="w-96 h-96 object-contain"
             />
@@ -91,7 +91,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
           <div className="border-b-2 border-slate-900 pb-4 mb-5">
             <div className="flex items-center justify-between">
               <img 
-                src="/assets/aistudio/logo-300x293_45c24a73.png" 
+                src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
                 alt="San Jose Seal" 
                 className="w-16 h-16 sm:w-18 sm:h-18 object-contain shrink-0"
               />
@@ -110,7 +110,7 @@ export const PayslipPrintModal: React.FC<PayslipPrintModalProps> = ({
                 </div>
               </div>
               <img 
-                src="/assets/aistudio/HR1_5214d096.png" 
+                src="/public/assets/aistudio/HR1_5214d096.png" 
                 alt="MHRMO Logo" 
                 className="h-9 sm:h-11 w-auto object-contain shrink-0"
               />

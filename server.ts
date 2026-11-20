@@ -18,6 +18,22 @@ async function startServer() {
   const app = express();
   app.use(express.json({ limit: '1mb' }));
 
+  // Personnel access gate: key is checked server-side and is never shipped to the browser.
+  app.post('/api/personnel-access/verify', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    const configuredKey = process.env.PERSONNEL_ACCESS_KEY;
+    if (!configuredKey) {
+      res.status(503).json({ authorized: false, error: 'Personnel access is not configured by the system administrator yet.' });
+      return;
+    }
+    const submittedKey = typeof req.body?.accessKey === 'string' ? req.body.accessKey : '';
+    if (!submittedKey || submittedKey.length > 256 || submittedKey !== configuredKey) {
+      res.status(401).json({ authorized: false, error: 'Invalid personnel access key.' });
+      return;
+    }
+    res.status(200).json({ authorized: true });
+  });
+
   // Server health & transactional email provider capability check (never exposes API keys)
   app.get('/api/health', (_req, res) => {
     res.json({

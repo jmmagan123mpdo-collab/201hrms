@@ -1070,7 +1070,7 @@ export const BiometricsManager: React.FC = () => {
               <div className="text-center space-y-1 border-b pb-3 font-sans">
                 <div className="flex items-center justify-center space-x-3 mb-1">
                   <img 
-                    src="/assets/aistudio/logo-300x293_45c24a73.png" 
+                    src="/public/assets/aistudio/logo-300x293_45c24a73.png" 
                     alt="San Jose Seal" 
                     className="w-10 h-10 object-contain"
                   />
@@ -1084,7 +1084,7 @@ export const BiometricsManager: React.FC = () => {
                     <span className="text-[9px] text-slate-400">Province of Occidental Mindoro</span>
                   </div>
                   <img 
-                    src="/assets/aistudio/HR1_5214d096.png" 
+                    src="/public/assets/aistudio/HR1_5214d096.png" 
                     alt="MHRMO" 
                     className="h-8 w-auto object-contain"
                   />

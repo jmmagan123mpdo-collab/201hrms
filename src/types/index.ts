@@ -1,4 +1,4 @@
-export type UserRole = 'developer' | 'hr_admin' | 'hr_staff' | 'payroll' | 'mayor' | 'department_head' | 'division_head' | 'employee';
+export type UserRole = 'developer' | 'hr_admin' | 'hr_staff' | 'payroll' | 'employee';
 
 export type EmploymentClassification = 
   | 'Permanent' 
